@@ -136,9 +136,9 @@ public class App extends Application {
       }
     });
     comfirm.setOnAction(e -> {
-      if (!manager.validatePassword(password.getText())) {
-        showAlert(AlertType.ERROR, "Invalid Password",
-            "Password must have between 8 and 16 characters, as well as 1 special character and 1 number!");
+      String passwordValidation = manager.validatePassword(password.getText());
+      if (passwordValidation != null) {
+        showAlert(AlertType.ERROR, "Invalid Passowrd", passwordValidation);
         return;
       }
       manager.changePassword(email.getText(), password.getText());
@@ -230,9 +230,9 @@ public class App extends Application {
         return;
       }
 
-      if (!manager.validatePassword(password.getText())) {
-        showAlert(AlertType.ERROR, "Invalid Password!",
-            "Password must have between 8 and 16 characters, as well as 1 special character and 1 number!");
+      String passwordValidation = manager.validatePassword(password.getText());
+      if (passwordValidation != null) {
+        showAlert(AlertType.ERROR, "Invalid Passowrd", passwordValidation);
         return;
       }
 
@@ -559,80 +559,81 @@ public class App extends Application {
       }
       case 2 -> {
 
-          System.out.println("\n=== REGISTER LOST ANIMAL ===");
-          System.out.print("Name: ");
-          String name = sc.nextLine();
+        System.out.println("\n=== REGISTER LOST ANIMAL ===");
+        System.out.print("Name: ");
+        String name = sc.nextLine();
 
-          //Animal Type
-          AnimalType type = (AnimalType) chooseOption(AnimalType.values(), "Type");
-          if(type == null) {
-              lostAndFoundMenu();
-              return;
-          }
-
-          //Breeds
-          List<String> breeds = type.getBreeds();
-          if(breeds == null) {
-              lostAndFoundMenu();
-              return;
-          }
-          String race = null;
-          while(true){
-              System.out.println("Select breed: ") ;
-              for(int i=0; i<breeds.size(); i++) {
-                  System.out.println((i+1) + ". " + breeds.get(i));
-              }
-              System.out.print("Enter race: ");
-              String input = sc.nextLine();
-
-              try {
-                  int breedOption = Integer.parseInt(input);
-                  if (breedOption >= 1 && breedOption <= breeds.size()) {
-                      race = breeds.get(breedOption - 1);
-                      break;
-                  }
-              } catch (NumberFormatException ignored) {
-              }
-
-              System.out.println("Invalid option, please try again.");
-
-          }
-
-          //Color
-          AnimalColor color = (AnimalColor) chooseOption(AnimalColor.values(), "Color");
-          if(color == null) {
-              lostAndFoundMenu();
-              return;
-          }
-
-          //Size
-          AnimalSize size = (AnimalSize) chooseOption(AnimalSize.values(), "Size");
-          if(size == null) {
-              lostAndFoundMenu();
-              return;
-          }
-
-          //Gender
-          AnimalGender gender = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
-          if(gender == null) {
-              lostAndFoundMenu();
-              return;
-          }
-
-          System.out.print("Description: ");
-          String description = sc.nextLine();
-
-          System.out.print("Contact: ");
-          int contact = sc.nextInt();
-          sc.nextLine(); // limpa o \n
-
-          System.out.print("Location: ");
-          String location = sc.nextLine();
-
-          manager.registerLostAnimal((User)loggedAcc, name,type, race, color, size, gender, description, contact, location);
-          System.out.println("\nAnimal registered successfully!\n");
-
+        // Animal Type
+        AnimalType type = (AnimalType) chooseOption(AnimalType.values(), "Type");
+        if (type == null) {
           lostAndFoundMenu();
+          return;
+        }
+
+        // Breeds
+        List<String> breeds = type.getBreeds();
+        if (breeds == null) {
+          lostAndFoundMenu();
+          return;
+        }
+        String race = null;
+        while (true) {
+          System.out.println("Select breed: ");
+          for (int i = 0; i < breeds.size(); i++) {
+            System.out.println((i + 1) + ". " + breeds.get(i));
+          }
+          System.out.print("Enter race: ");
+          String input = sc.nextLine();
+
+          try {
+            int breedOption = Integer.parseInt(input);
+            if (breedOption >= 1 && breedOption <= breeds.size()) {
+              race = breeds.get(breedOption - 1);
+              break;
+            }
+          } catch (NumberFormatException ignored) {
+          }
+
+          System.out.println("Invalid option, please try again.");
+
+        }
+
+        // Color
+        AnimalColor color = (AnimalColor) chooseOption(AnimalColor.values(), "Color");
+        if (color == null) {
+          lostAndFoundMenu();
+          return;
+        }
+
+        // Size
+        AnimalSize size = (AnimalSize) chooseOption(AnimalSize.values(), "Size");
+        if (size == null) {
+          lostAndFoundMenu();
+          return;
+        }
+
+        // Gender
+        AnimalGender gender = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
+        if (gender == null) {
+          lostAndFoundMenu();
+          return;
+        }
+
+        System.out.print("Description: ");
+        String description = sc.nextLine();
+
+        System.out.print("Contact: ");
+        int contact = sc.nextInt();
+        sc.nextLine(); // limpa o \n
+
+        System.out.print("Location: ");
+        String location = sc.nextLine();
+
+        manager.registerLostAnimal((User) loggedAcc, name, type, race, color, size, gender, description, contact,
+            location);
+        System.out.println("\nAnimal registered successfully!\n");
+
+        lostAndFoundMenu();
       }
       case 3 -> {
         manager.foundMyAnimal(loggedAcc);
@@ -742,13 +743,11 @@ public class App extends Application {
               return;
             }
 
-
-
-            //Gender
+            // Gender
             AnimalGender gender = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
             if (gender == null) {
-                javafx.application.Platform.runLater(this::shelterHomepage);
-                return;
+              javafx.application.Platform.runLater(this::shelterHomepage);
+              return;
             }
 
             System.out.print("Age: ");

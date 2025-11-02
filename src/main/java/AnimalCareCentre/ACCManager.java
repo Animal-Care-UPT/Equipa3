@@ -1,7 +1,6 @@
 package AnimalCareCentre;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,16 +11,10 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
-import org.passay.CharacterRule;
-import org.passay.EnglishCharacterData;
-import org.passay.LengthRule;
-import org.passay.PasswordData;
-import org.passay.PasswordValidator;
-import org.passay.RuleResult;
-import org.passay.WhitespaceRule;
 
 import AnimalCareCentre.enums.*;
 import AnimalCareCentre.models.*;
+import AnimalCareCentre.utils.ACCPasswordValidator;
 
 public class ACCManager {
 
@@ -49,7 +42,7 @@ public class ACCManager {
   }
 
   public List<Adoption> getUserAdoptions(User user) {
-    Query<Adoption> query = session.createQuery("FROM Adoption WHERE user = :user");
+    Query<Adoption> query = session.createQuery("FROM Adoption WHERE user = :user", Adoption.class);
     query.setParameter("user", user);
     return query.getResultList();
   }
@@ -94,11 +87,12 @@ public class ACCManager {
   }
 
   public void changePassword(String email, String password) {
+    String encryptedPw = encript(password);
     session.beginTransaction();
     Query<Account> query = session.createQuery("FROM Account WHERE email =:email", Account.class);
     query.setParameter("email", email);
     Account account = query.uniqueResult();
-    account.setPassword(password);
+    account.setPassword(encryptedPw);
     session.merge(account);
     session.getTransaction().commit();
   }
@@ -114,7 +108,9 @@ public class ACCManager {
       return null;
     }
 
-    if (acc.getPassword().equals(password)) {
+    String pw = decrypt(acc.getPassword());
+
+    if (pw.equals(password)) {
       return acc;
     } else {
       return null;
@@ -123,24 +119,30 @@ public class ACCManager {
 
   public void createUserAccount(String name, String email, String password, String location,
       SecurityQuestion securityQuestion, String answer, LocalDate birthDate, int contact) {
+    String encryptedPw = encript(password);
+    String encryptedAnswer = encript(answer);
     session.beginTransaction();
-    User user = new User(name, email, password, location, securityQuestion, answer, birthDate, contact);
+    User user = new User(name, email, encryptedPw, location, securityQuestion, encryptedAnswer, birthDate, contact);
     session.persist(user);
     session.getTransaction().commit();
   }
 
   public void createAdminAccount(String name, String email, String password, String location,
       SecurityQuestion securityQuestion, String answer) {
+    String encryptedPw = encript(password);
+    String encryptedAnswer = encript(answer);
     session.beginTransaction();
-    Account admin = new Account(name, email, password, location, securityQuestion, answer);
+    Account admin = new Account(name, email, encryptedPw, location, securityQuestion, encryptedAnswer);
     session.persist(admin);
     session.getTransaction().commit();
   }
 
   public void createShelterAccount(String name, String email, String password, String location,
       SecurityQuestion securityQuestion, String answer, int foundationYear, int contact) {
+    String encryptedPw = encript(password);
+    String encryptedAnswer = encript(answer);
     session.beginTransaction();
-    Shelter shelter = new Shelter(name, email, password, location, securityQuestion, answer, foundationYear, contact);
+    Shelter shelter = new Shelter(name, email, encryptedPw, location, securityQuestion, encryptedAnswer, foundationYear, contact);
     session.persist(shelter);
     session.getTransaction().commit();
   }
@@ -180,54 +182,14 @@ public class ACCManager {
   }
 
   // Method to register animals as a Shelter
-  public void registerAnimal(Shelter shelter, String name, AnimalType type, String race, AnimalSize size, AnimalGender gender,
-                             int age, AnimalColor color, String description, AdoptionType adoptionType) {
+  public void registerAnimal(Shelter shelter, String name, AnimalType type, String race, AnimalSize size,
+      AnimalGender gender,
+      int age, AnimalColor color, String description, AdoptionType adoptionType) {
     session.beginTransaction();
-    ShelterAnimal animal = new ShelterAnimal(name, type, race, color, false, size, gender, adoptionType, description, shelter);
+    ShelterAnimal animal = new ShelterAnimal(name, type, race, color, false, size, gender, adoptionType, description,
+        shelter);
     session.persist(animal);
     session.getTransaction().commit();
-  }
-
-  public void exit() {
-    session.close();
-    sessionFactory.close();
-  }
-
-  public boolean validatePassword(String password) {
-    PasswordValidator validator = new PasswordValidator(Arrays.asList(new LengthRule(8, 16),
-        new CharacterRule(EnglishCharacterData.UpperCase, 1), new CharacterRule(EnglishCharacterData.Digit, 1),
-        new CharacterRule(EnglishCharacterData.Special, 1), new WhitespaceRule()));
-    RuleResult result = validator.validate(new PasswordData(password));
-    return result.isValid();
-  }
-
-  public boolean validateEmail(String email) {
-    EmailValidator validator = EmailValidator.getInstance();
-    if (!validator.isValid(email)) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  public boolean doesEmailExist(String email) {
-    Query<Account> query = session.createQuery("FROM Account WHERE email = :email", Account.class);
-    query.setParameter("email", email);
-    Account acc = query.uniqueResult();
-    if (acc == null) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  public boolean validateFields(String... strings) {
-    for (String string : strings) {
-      if (string == null || string.isBlank()) {
-        return false;
-      }
-    }
-    return true;
   }
 
   public void showLostAnimals() {
@@ -297,7 +259,6 @@ public class ACCManager {
     LostAnimal foundAnimal = lostAnimals.get(choice);
     System.out.println("Congratulations on finding your animal!");
 
-    // 🟢 Safe remove — make sure it's attached to the session
     session.remove(foundAnimal);
     session.getTransaction().commit();
   }
@@ -305,12 +266,104 @@ public class ACCManager {
   /**
    * Registers a new lost animal.
    */
-  public void registerLostAnimal(User user, String name, AnimalType type, String race, AnimalColor color, AnimalSize size,
-                                 AnimalGender gender, String description, int contact, String location) {
-          session.beginTransaction();
-          LostAnimal animal = new  LostAnimal(name, type, race, color, size, gender, description, contact, location);
-          session.persist(animal);
-          session.getTransaction().commit();
+  public void registerLostAnimal(User user, String name, AnimalType type, String race, AnimalColor color,
+      AnimalSize size,
+      AnimalGender gender, String description, int contact, String location) {
+    session.beginTransaction();
+    LostAnimal animal = new LostAnimal(name, type, race, color, size, gender, description, contact, location);
+    session.persist(animal);
+    session.getTransaction().commit();
 
+  }
+
+  public void exit() {
+    session.close();
+    sessionFactory.close();
+  }
+
+  public String validatePassword(String password) {
+    ACCPasswordValidator validator = new ACCPasswordValidator();
+    return validator.validate(password);
+  }
+
+  public boolean validateEmail(String email) {
+    EmailValidator validator = EmailValidator.getInstance();
+    if (!validator.isValid(email)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  public boolean doesEmailExist(String email) {
+    Query<Account> query = session.createQuery("FROM Account WHERE email = :email", Account.class);
+    query.setParameter("email", email);
+    Account acc = query.uniqueResult();
+    if (acc == null) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  public boolean validateFields(String... strings) {
+    for (String string : strings) {
+      if (string == null || string.isBlank()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public String encript(String text) {
+    String abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#@_$-";
+    StringBuilder result = new StringBuilder(text.length());
+    String key = "lAsAgNa";
+    int k = 0;
+    int sum;
+
+    for (int i = 0; i < text.length(); i++) {
+      int textValue = abc.indexOf(text.charAt(i));
+      int keyValue = abc.indexOf(key.charAt(k));
+      sum = textValue + keyValue + 1;
+
+      if (sum >= abc.length()) {
+        sum -= abc.length();
+      }
+
+      k++;
+
+      if (k >= key.length()) {
+        k = 0;
+      }
+
+      result.append(abc.charAt(sum));
+    }
+
+    return result.toString();
+  }
+
+  public String decrypt(String text) {
+    String abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#@_$-";
+    String key = "lAsAgNa";
+    StringBuilder result = new StringBuilder();
+    int k = 0;
+
+    for (int i = 0; i < text.length(); i++) {
+      int textValue = abc.indexOf(text.charAt(i));
+      int keyValue = abc.indexOf(key.charAt(k));
+
+      int sum = textValue - keyValue - 1;
+      if (sum < 0)
+        sum += abc.length();
+
+      result.append(abc.charAt(sum));
+      k++;
+
+      if (k >= key.length())
+        k = 0;
+    }
+
+    return result.toString();
   }
 }
