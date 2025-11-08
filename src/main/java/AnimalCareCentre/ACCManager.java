@@ -474,5 +474,22 @@ public class ACCManager {
         session.getTransaction().commit();
     }
 
+    /**
+     * @param shelter
+     * @param type
+     */
+    public List<Adoption> getCompletedAdoptionsByShelter(Shelter shelter, AdoptionType type) {
+        session.beginTransaction();
+        Query<Adoption> query = session.createQuery(
+                "FROM Adoption WHERE animal.shelter = :shelter AND type = :type AND status = :status",
+                Adoption.class);
+        query.setParameter("shelter", shelter);
+        query.setParameter("type", type);
+        query.setParameter("status", Status.ACCEPTED);
+        List<Adoption> adoptions = query.getResultList();
+        session.getTransaction().commit();
+        return adoptions;
+    }
+
 
 }
