@@ -53,6 +53,7 @@ public class ACCScene extends Scene {
     header.setStyle("-fx-background-color: #69462B;");
     header.setMinHeight(60);
     header.setMaxHeight(60);
+    header.setSpacing(40);
     Label footerLabel = new Label("Animal Care Centre - UPT");
     footerLabel.setTextFill(Color.WHITE);
     footer.setStyle("-fx-background-color: #69462B;");
@@ -83,8 +84,11 @@ public class ACCScene extends Scene {
   /**
    * This method adds items to the navigation bar of the app.
    */
-  public void setHeader(Node... items) {
-    header.addItems(items);
+  public void setHeader(String ... items) {
+    for (String item: items) {
+      ACCNavButton navButton = new ACCNavButton(item);
+      header.addItems(navButton);
+    }
   }
 
   /**

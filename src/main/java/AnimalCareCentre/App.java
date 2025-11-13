@@ -368,6 +368,18 @@ public class App extends Application {
     logout.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 16px;");
     scene.addItems(logout);
 
+    // DELETE THIS LATER
+    // This is just temporary to test something, it's gonna be on the commit just so
+    // everyone tries it on their pcs, but delete before component 2 delivery,
+    // it's just preparation for component 3
+    if (loggedAcc instanceof User) {
+      scene.setHeader("Home", "Search Animals", "Search Shelters", "Lost and Found", "Account");
+    } else if (loggedAcc instanceof Shelter) {
+      scene.setHeader("Home", "Animals", "Lost and Found", "Account");
+    } else {
+      scene.setHeader("Home", "Search Animals", "Search Shelters", "Lost and Found", "Account");
+    }
+
     logout.setOnAction(e -> {
       System.out.println("\n Logout efetuado!");
       loggedAcc = null;
