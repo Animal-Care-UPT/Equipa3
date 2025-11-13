@@ -59,6 +59,7 @@ public class ACCScene extends Scene {
     footer.setMinHeight(30);
     footer.setMaxHeight(30);
     footer.addItems(footerLabel);
+    VBox.setVgrow(footer, Priority.NEVER);
     content.setMaxWidth(Double.MAX_VALUE);
     content.setMaxHeight(Double.MAX_VALUE);
     HBox.setHgrow(content, Priority.ALWAYS);
@@ -131,6 +132,9 @@ public class ACCScene extends Scene {
     ScrollPane scroll = new ScrollPane(vbox);
     scroll.setFitToWidth(true);
     scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    scroll.viewportBoundsProperty().addListener((obs, oldB, newB) -> {
+      vbox.setMinHeight(newB.getHeight());
+    });
     return scroll;
   }
 }
