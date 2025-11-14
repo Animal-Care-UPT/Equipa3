@@ -11,8 +11,6 @@ import jakarta.persistence.*;
  *
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-
 public class ShelterAnimal extends Animal {
 
   @ManyToOne

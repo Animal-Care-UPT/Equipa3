@@ -4,12 +4,7 @@ import AnimalCareCentre.server.enums.*;
 import jakarta.persistence.*;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class LostAnimal extends Animal {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
 
   String location;
 

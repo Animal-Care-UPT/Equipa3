@@ -8,6 +8,8 @@ import AnimalCareCentre.server.enums.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +35,7 @@ public class Account {
   private String email;
   private String password;
   private String location;
+  @Enumerated(EnumType.STRING)
   private SecurityQuestion securityQuestion;
   private String answer;
   @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
