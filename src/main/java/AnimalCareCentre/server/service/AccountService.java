@@ -40,14 +40,6 @@ public class AccountService {
     return accountRepository.save(acc);
   }
 
-  public SecurityQuestion getSecurityQuestion(String email) {
-    Account acc = findAccount(email);
-    if (acc != null) {
-      return acc.getSecurityQuestion();
-    }
-    return null;
-  }
-
   public boolean verifySecurityAnswer(String email, String answer) {
     Account acc = findAccount(email);
     if (acc != null) {

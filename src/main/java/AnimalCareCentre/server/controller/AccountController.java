@@ -115,4 +115,13 @@ public class AccountController {
       return ResponseEntity.ok(Map.of("type", "ADMIN", "account", account));
     }
   }
+
+  @PostMapping("/secquestion")
+  public ResponseEntity<?> getSecurityQuestion(@RequestParam String email) {
+    Account acc = accountService.findAccount(email);
+    if (acc == null) {
+      return ResponseEntity.status(404).body("Email not registered!");
+    }
+    return ResponseEntity.ok(acc.getSecurityQuestion());
+  }
 }
