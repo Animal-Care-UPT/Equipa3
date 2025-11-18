@@ -1,5 +1,6 @@
 package AnimalCareCentre.server.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import AnimalCareCentre.server.enums.*;
@@ -10,6 +11,8 @@ import AnimalCareCentre.server.util.ACCPasswordEncryption;
 @Service
 public class AccountService {
 
+  @Value("${admin.secret.word}")
+  private String adminSecretWord;
   private final AccountRepository accountRepository;
 
   public AccountService(AccountRepository accountRepository) {
@@ -46,6 +49,13 @@ public class AccountService {
       if (acc.getAnswer().equals(answer)) {
         return true;
       }
+    }
+    return false;
+  }
+
+  public boolean verifyAdminSecret(String secret) {
+    if (secret.equals(adminSecretWord)) {
+      return true;
     }
     return false;
   }

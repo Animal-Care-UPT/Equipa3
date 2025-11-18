@@ -3,7 +3,7 @@ package AnimalCareCentre.server.util;
 public class ACCPasswordEncryption {
 
   private static final String ABC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#@_$-";
-  private static final String KEY = "lAsAgNa";
+  private static final String KEY = System.getenv("ENCRYPTION_KEY");
 
   public static String encrypt(String text) {
     StringBuilder result = new StringBuilder(text.length());

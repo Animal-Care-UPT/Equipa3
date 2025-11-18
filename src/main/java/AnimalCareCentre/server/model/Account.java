@@ -74,47 +74,66 @@ public class Account {
   protected Account() {
   }
 
-  // getters area
-  public String getName() {
-    return name;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public String getLocation() {
-    return location;
-  }
-
-  public SecurityQuestion getSecurityQuestion() {
-    return securityQuestion;
-  }
-
-  public String getAnswer() {
-    return answer;
-  }
-
-  // setters area
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public void setSecurityQuestion(SecurityQuestion securityQuestion) {
-    this.securityQuestion = securityQuestion;
+  // toString from the class Account
+  @Override
+  public String toString() {
+    return "Name: " + name + "\nLocation: " + location;
   }
 
   public long getId() {
     return id;
   }
 
-  // toString from the class Account
-  @Override
-  public String toString() {
-    return "Name: " + name + "\nLocation: " + location;
+  public void setId(long id) {
+    this.id = id;
   }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public SecurityQuestion getSecurityQuestion() {
+    return securityQuestion;
+  }
+
+  public void setSecurityQuestion(SecurityQuestion securityQuestion) {
+    this.securityQuestion = securityQuestion;
+  }
+
+  public String getAnswer() {
+    return answer;
+  }
+
+  public void setAnswer(String answer) {
+    this.answer = answer;
+  }
+
 }

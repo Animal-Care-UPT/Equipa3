@@ -2,7 +2,6 @@ package AnimalCareCentre.server.controller;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +20,6 @@ import AnimalCareCentre.server.service.AccountService;
 @RequestMapping("/accounts/")
 public class AccountController {
 
-  @Value("${admin.secret.word}")
-  private String adminSecretWord;
   private final AccountService accountService;
   private final ACCPasswordValidator passwordValidator = new ACCPasswordValidator();
 
@@ -58,7 +55,7 @@ public class AccountController {
   @PostMapping("/create")
   public ResponseEntity<?> createAccount(@Valid @RequestBody Account account, @RequestParam String secret) {
 
-    if (!secret.equals(adminSecretWord)) {
+    if (!accountService.verifyAdminSecret(secret)) {
       return ResponseEntity.status(403).body("Invalid admin secret word!");
     }
 
