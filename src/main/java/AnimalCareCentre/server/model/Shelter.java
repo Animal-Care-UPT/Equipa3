@@ -31,20 +31,6 @@ public class Shelter extends Account {
   @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ShelterAnimal> animals = new ArrayList<>();
 
-  /**
-   * Constructor for the class Shelter
-   *
-   * @param foundationYear
-   * @param contact
-   */
-  public Shelter(String name, String email, String password, String location, SecurityQuestion securityQuestion,
-      String answer, int foundationYear, String contact) {
-    super(name, email, password, location, securityQuestion, answer);
-    this.foundationYear = foundationYear;
-    this.contact = contact;
-    status = Status.PENDING;
-  }
-
   protected Shelter() {
   }
 
