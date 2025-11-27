@@ -31,7 +31,7 @@ public class ShelterController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<?> createUser(@Valid @RequestBody Shelter shelter) {
+  public ResponseEntity<?> createShelter(@Valid @RequestBody Shelter shelter) {
 
     if (shelter.getFoundationYear() > LocalDate.now().getYear()) {
       return ResponseEntity.badRequest().body("Foundation year cannot be in the future!");
@@ -51,8 +51,13 @@ public class ShelterController {
   }
 
   @PutMapping("/status")
-  public Shelter changeStatus(@RequestBody Shelter shelter, @RequestParam Status status) {
-    return shelterService.changeStatus(shelter, status);
+  public ResponseEntity<?> changeStatus(@RequestParam long id, @RequestParam Status status) {
+    Shelter shelter = shelterService.findById(id);
+    if (shelter != null) {
+      shelterService.changeStatus(shelter, status);
+      return ResponseEntity.ok().body("Changed shelter status successfully");
+    }
+    return ResponseEntity.status(404).body("Shelter not found!");
   }
 
   @GetMapping("/pending")
@@ -61,7 +66,7 @@ public class ShelterController {
     if (shelters.isEmpty()) {
       return ResponseEntity.status(404).body("There are no pending Shelters!");
     }
-      return ResponseEntity.ok(shelters);
+    return ResponseEntity.ok(shelters);
   }
 
   @GetMapping
