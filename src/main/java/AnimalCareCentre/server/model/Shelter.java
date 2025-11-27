@@ -6,6 +6,8 @@ import java.util.List;
 import AnimalCareCentre.server.enums.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
@@ -27,6 +29,7 @@ public class Shelter extends Account {
   @NotNull(message = "Contact is mandatory!")
   @Size(min = 9, max = 9)
   private String contact;
+  @Enumerated(EnumType.STRING)
   private Status status;
   @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ShelterAnimal> animals = new ArrayList<>();
