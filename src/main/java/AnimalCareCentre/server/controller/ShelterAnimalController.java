@@ -12,6 +12,8 @@ import AnimalCareCentre.server.service.ShelterAnimalService;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,11 +34,13 @@ public class ShelterAnimalController {
     this.shelterService = shelterService;
   }
 
+  @PreAuthorize("hasRole('SHELTER')")
   @PostMapping("/register")
-  public ResponseEntity<?> registerShelterAnimal(@Valid @RequestBody ShelterAnimal shelterAnimal, @RequestParam long id) {
+  public ResponseEntity<?> registerShelterAnimal(@Valid @RequestBody ShelterAnimal shelterAnimal) {
 
 
-    Shelter shelter = shelterService.findById(id);
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    Shelter shelter = shelterService.findByEmail(email);
     if (shelter == null) {
       return ResponseEntity.status(404).body("The shelter doesn't exist!");
     }
