@@ -51,7 +51,7 @@ public class Account {
   @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<LostAnimal> lostAnimals = new ArrayList<>();
 
-  protected Account() {
+  public Account() {
   }
 
   // toString from the class Account

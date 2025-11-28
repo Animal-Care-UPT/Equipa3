@@ -23,16 +23,11 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
-
 public class App extends Application {
 
   private static Stage stage;
   private static Scanner sc = new Scanner(System.in);
   private Thread consoleThread;
-  private static final String BASE_URL = "http://localhost:8080";
-  private static final RestTemplate rest = new RestTemplate();
 
   public void start(Stage stage) {
     App.stage = stage;
@@ -156,7 +151,7 @@ public class App extends Application {
             "securityQuestion", sec.getValue(), "answer", answer.getText(), "birthDate",
             birthDate.getValue().toString(), "contact", Integer.parseInt(contact.getText()));
 
-        ApiResponse response = ApiClient.post("users/create", json);
+        ApiResponse response = ApiClient.post("/users/create", json);
 
         if (response.isSuccess()) {
           showAlert(AlertType.INFORMATION, "Success", "Account created with success!");
@@ -166,16 +161,21 @@ public class App extends Application {
           showAlert(AlertType.ERROR, "Error", response.getBody());
         }
 
-
       } else if (accType.getValue().equals("Admin")) {
 
         String json = jsonString("name", name.getText(), "email", email.getText(),
             "password", password.getText(), "location", location.getText(),
-            "securityQuestion", sec.getValue(), "answer", answer.getText());
+            "securityQuestion", sec.getValue(), "answer", answer.getText(), "secret", adminCode.getText());
 
-        String secret = jsonString("secret", adminCode.getText());
+        ApiResponse response = ApiClient.post("/accounts/create", json);
 
-        showMainMenu();
+        if (response.isSuccess()) {
+          showAlert(AlertType.INFORMATION, "Success", "Account created with success!");
+          System.out.println(response.getBody());
+          showMainMenu();
+        } else {
+          showAlert(AlertType.ERROR, "Error", response.getBody());
+        }
 
       } else if (accType.getValue().equals("Shelter")) {
 
@@ -184,6 +184,15 @@ public class App extends Application {
             "securityQuestion", sec.getValue(), "answer", answer.getText(), "foundationYear",
             Integer.parseInt(year.getText()), "contact", Integer.parseInt(contact.getText()));
 
+        ApiResponse response = ApiClient.post("/shelters/create", json);
+
+        if (response.isSuccess()) {
+          showAlert(AlertType.INFORMATION, "Success", "Account created with success!");
+          System.out.println(response.getBody());
+          showMainMenu();
+        } else {
+          showAlert(AlertType.ERROR, "Error", response.getBody());
+        }
         showMainMenu();
       }
 

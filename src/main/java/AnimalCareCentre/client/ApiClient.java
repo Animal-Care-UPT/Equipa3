@@ -14,18 +14,15 @@ public class ApiClient {
    * Sends a POST request
    *
    */
-  public static ApiResponse post(String endpoint, String jsonBody) {
+  public static ApiResponse post(String endpoint, String json) {
     try {
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
 
-      HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
+      HttpEntity<String> request = new HttpEntity<>(json, headers);
 
-      ResponseEntity<String> response = rest.postForEntity(
-          BASE_URL + endpoint,
-          request,
-          String.class);
+      ResponseEntity<String> response = rest.postForEntity(BASE_URL + endpoint, request, String.class);
 
       return new ApiResponse(true, response.getBody(), response.getStatusCode().value());
 
@@ -40,9 +37,7 @@ public class ApiClient {
    */
   public static ApiResponse get(String endpoint) {
     try {
-      ResponseEntity<String> response = rest.getForEntity(
-          BASE_URL + endpoint,
-          String.class);
+      ResponseEntity<String> response = rest.getForEntity(BASE_URL + endpoint, String.class);
 
       return new ApiResponse(true, response.getBody(), response.getStatusCode().value());
 
@@ -55,17 +50,13 @@ public class ApiClient {
    * Sends a PUT request
    *
    */
-  public static ApiResponse put(String endpoint, String jsonBody) {
+  public static ApiResponse put(String endpoint, String json) {
     try {
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
-      HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
-      ResponseEntity<String> response = rest.exchange(
-          BASE_URL + endpoint,
-          HttpMethod.PUT,
-          request,
-          String.class);
+      HttpEntity<String> request = new HttpEntity<>(json, headers);
+      ResponseEntity<String> response = rest.exchange(BASE_URL + endpoint, HttpMethod.PUT, request, String.class);
 
       return new ApiResponse(true, response.getBody(), response.getStatusCode().value());
 
@@ -81,11 +72,7 @@ public class ApiClient {
   public static ApiResponse delete(String endpoint) {
     try {
 
-      ResponseEntity<String> response = rest.exchange(
-          BASE_URL + endpoint,
-          HttpMethod.DELETE,
-          null,
-          String.class);
+      ResponseEntity<String> response = rest.exchange(BASE_URL + endpoint, HttpMethod.DELETE, null, String.class);
       return new ApiResponse(true, response.getBody(), response.getStatusCode().value());
 
     } catch (HttpClientErrorException | HttpServerErrorException e) {

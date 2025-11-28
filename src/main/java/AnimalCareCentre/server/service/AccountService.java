@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import AnimalCareCentre.server.enums.SecurityQuestion;
 import AnimalCareCentre.server.model.Account;
 import AnimalCareCentre.server.repository.AccountRepository;
 import AnimalCareCentre.server.util.*;
@@ -24,9 +25,16 @@ public class AccountService {
     this.passwordEncoder = passwordEncoder;
   }
 
-  public Account createAccount(Account account) {
-    account.setPassword(passwordEncoder.encode(account.getPassword()));
-    return accountRepository.save(account);
+  public Account createAccount(String name, String email, String password, String location, SecurityQuestion securityQuestion, String answer) {
+
+    Account acc = new Account();
+    acc.setName(name);
+    acc.setEmail(email);
+    acc.setPassword(passwordEncoder.encode(password));
+    acc.setLocation(location);
+    acc.setSecurityQuestion(securityQuestion);
+    acc.setAnswer(answer);
+    return accountRepository.save(acc);
   }
 
   public Account findAccount(String email) {

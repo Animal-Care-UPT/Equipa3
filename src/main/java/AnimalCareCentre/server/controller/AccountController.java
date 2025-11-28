@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import AnimalCareCentre.server.dto.AdminSecretDTO;
+import AnimalCareCentre.server.dto.AdminCreateDTO;
 import AnimalCareCentre.server.dto.ChangePasswordDTO;
 import AnimalCareCentre.server.dto.LoginRequestDTO;
 import AnimalCareCentre.server.model.*;
@@ -38,24 +38,25 @@ public class AccountController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<?> createAccount(@Valid @RequestBody Account account, @Valid @RequestBody AdminSecretDTO secret) {
+  public ResponseEntity<?> createAccount(@Valid @RequestBody AdminCreateDTO acc) {
 
-    if (!accountService.verifyAdminSecret(secret.getAnswer())) {
+    if (!accountService.verifyAdminSecret(acc.getSecret())) {
       return ResponseEntity.status(403).body("Invalid admin secret word!");
-
     }
-    String pwError = accountService.verifyPasswordRules(account.getPassword());
+
+    String pwError = accountService.verifyPasswordRules(acc.getPassword());
     if (pwError != null) {
       return ResponseEntity.status(400).body(pwError);
     }
 
-    if (accountService.findAccount(account.getEmail()) != null) {
+    if (accountService.findAccount(acc.getEmail()) != null) {
       return ResponseEntity.status(409).body("Email already registered!");
     }
 
-    Account acc = accountService.createAccount(account);
-    acc.setPassword(null);
-    return ResponseEntity.status(201).body(acc);
+    Account account = accountService.createAccount(acc.getName(), acc.getEmail(), acc.getPassword(), acc.getLocation(),
+        acc.getSecurityQuestion(), acc.getAnswer());
+    account.setPassword(null);
+    return ResponseEntity.status(201).body(account);
   }
 
   @PutMapping("/changepw")
