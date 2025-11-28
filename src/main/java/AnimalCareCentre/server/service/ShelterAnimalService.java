@@ -56,5 +56,8 @@ public class ShelterAnimalService {
   public List<ShelterAnimal> searchAdoptionAnimals() {
     return shelterAnimalRepository.findByAdoptionTypeAndStatus(AdoptionType.FOR_ADOPTION, Status.AVAILABLE);
   }
-
+  
+  public ShelterAnimal findById(Long id){
+    return shelterAnimalRepository.findById(id).orElse(null);
+  }
 }
