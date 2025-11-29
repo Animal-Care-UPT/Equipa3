@@ -3,6 +3,13 @@ package AnimalCareCentre.server.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,10 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import AnimalCareCentre.server.dto.AdminCreateDTO;
+import AnimalCareCentre.server.dto.ChangePasswordDTO;
+import AnimalCareCentre.server.dto.LoginRequestDTO;
 import AnimalCareCentre.server.model.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import AnimalCareCentre.server.service.AccountService;
 
 @RestController
@@ -21,75 +31,77 @@ import AnimalCareCentre.server.service.AccountService;
 public class AccountController {
 
   private final AccountService accountService;
+  private final AuthenticationManager authenticationManager;
 
-  public AccountController(AccountService accountService) {
+  public AccountController(AccountService accountService, AuthenticationManager authenticationManager) {
     this.accountService = accountService;
-  }
-
-  @PutMapping("/changepw")
-  public ResponseEntity<?> changePassword(@Email @NotBlank @RequestParam String email, @NotBlank @RequestParam String newPW, @NotBlank @RequestParam String answer) {
-
-    if (accountService.findAccount(email) == null) {
-      return ResponseEntity.status(404).body("Account not registered!");
-    }
-
-    if (!accountService.verifySecurityAnswer(email, answer)) {
-      return ResponseEntity.status(403).body("Invalid answer!");
-    }
-
-    String pwError = accountService.verifyPasswordRules(newPW);
-    if (pwError != null) {
-      return ResponseEntity.badRequest().body(pwError);
-    }
-
-    accountService.changePassword(email, newPW);
-
-    return ResponseEntity.ok("Password changed successfully");
+    this.authenticationManager = authenticationManager;
   }
 
   @PostMapping("/create")
-  public ResponseEntity<?> createAccount(@Valid @RequestBody Account account, @RequestParam String secret) {
+  public ResponseEntity<?> createAccount(@Valid @RequestBody AdminCreateDTO acc) {
 
-    if (!accountService.verifyAdminSecret(secret)) {
+    if (!accountService.verifyAdminSecret(acc.getSecret())) {
       return ResponseEntity.status(403).body("Invalid admin secret word!");
-
     }
-    String pwError = accountService.verifyPasswordRules(account.getPassword());
+
+    String pwError = accountService.verifyPasswordRules(acc.getPassword());
     if (pwError != null) {
       return ResponseEntity.status(400).body(pwError);
     }
 
-    if (accountService.findAccount(account.getEmail()) != null) {
+    if (accountService.findAccount(acc.getEmail()) != null) {
       return ResponseEntity.status(409).body("Email already registered!");
     }
 
-    Account acc = accountService.createAccount(account);
-    acc.setPassword(null);
-    return ResponseEntity.status(201).body(acc);
+    Account account = accountService.createAccount(acc.getName(), acc.getEmail(), acc.getPassword(), acc.getLocation(),
+        acc.getSecurityQuestion(), acc.getAnswer());
+    account.setPassword(null);
+    return ResponseEntity.status(201).body(account);
+  }
+
+  @PutMapping("/changepw")
+  public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDTO pwRequest) {
+
+    if (accountService.findAccount(pwRequest.getEmail()) == null) {
+      return ResponseEntity.status(404).body("Account not registered!");
+    }
+
+    if (!accountService.verifySecurityAnswer(pwRequest.getEmail(), pwRequest.getAnswer())) {
+      return ResponseEntity.status(403).body("Invalid answer!");
+    }
+
+    String pwError = accountService.verifyPasswordRules(pwRequest.getNewPassword());
+    if (pwError != null) {
+      return ResponseEntity.badRequest().body(pwError);
+    }
+
+    accountService.changePassword(pwRequest.getEmail(), pwRequest.getNewPassword());
+
+    return ResponseEntity.ok("Password changed successfully");
   }
 
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletRequest httpRequest) {
+    try {
 
-    Account account = accountService.login(email, password);
+      UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(request.getEmail(),
+          request.getPassword());
 
-    if (account == null) {
-      return ResponseEntity.status(401).body("Invalid email or password!");
-    }
+      Authentication auth = authenticationManager.authenticate(token);
 
-    if (account instanceof Shelter) {
-      Shelter shelter = (Shelter) account;
-      shelter.setPassword(null);
-      return ResponseEntity.ok(Map.of("type", "SHELTER", "account", shelter));
+      SecurityContext securityContext = SecurityContextHolder.getContext();
+      securityContext.setAuthentication(auth);
+      HttpSession session = httpRequest.getSession(true);
+      session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
 
-    } else if (account instanceof User) {
-      User user = (User) account;
-      user.setPassword(null);
-      return ResponseEntity.ok(Map.of("type", "USER", "account", user));
+      String role = securityContext.getAuthentication().getAuthorities().iterator().next().getAuthority();
 
-    } else {
-      account.setPassword(null);
-      return ResponseEntity.ok(Map.of("type", "ADMIN", "account", account));
+      return ResponseEntity.ok(role);
+
+    } catch (AuthenticationException e) {
+
+      return ResponseEntity.status(400).body("Invalid email or password!");
     }
   }
 
@@ -100,5 +112,15 @@ public class AccountController {
       return ResponseEntity.status(404).body("Email not registered!");
     }
     return ResponseEntity.ok(acc.getSecurityQuestion());
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<?> logout(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
+    SecurityContextHolder.clearContext();
+    return ResponseEntity.ok("Logged out successfully");
   }
 }

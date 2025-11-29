@@ -40,7 +40,6 @@ public class Account {
   @Email(message = "Please enter a valid email address!")
   private String email;
   @NotBlank(message = "Password is mandatory!")
-  @Size(min = 8, max = 16)
   private String password;
   @NotBlank(message = "Location is mandatory!")
   private String location;
@@ -52,7 +51,7 @@ public class Account {
   @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<LostAnimal> lostAnimals = new ArrayList<>();
 
-  protected Account() {
+  public Account() {
   }
 
   // toString from the class Account
