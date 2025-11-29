@@ -45,7 +45,11 @@ public class Adoption {
     return user;
   }
 
-  public ShelterAnimal getAnimal() {
+  public void setType(AdoptionType type) {this.type = type;}
+
+    public long getId() {return id;}
+
+    public ShelterAnimal getAnimal() {
     return animal;
   }
 
@@ -63,7 +67,17 @@ public class Adoption {
     return type;
   }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
 
+    public void setAnimal(ShelterAnimal animal) {
+        this.animal = animal;
+    }
+
+    public void setRequestDate(LocalDate requestDate) {
+        this.requestDate = requestDate;
+    }
 
     @Override
     public String toString() {
