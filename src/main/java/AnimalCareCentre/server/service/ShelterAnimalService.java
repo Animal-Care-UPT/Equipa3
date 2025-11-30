@@ -20,6 +20,7 @@ public class ShelterAnimalService {
   }
 
   public ShelterAnimal registerShelterAnimal(ShelterAnimal shelterAnimal) {
+    shelterAnimal.setStatus(Status.AVAILABLE);
     return shelterAnimalRepository.save(shelterAnimal);
   }
 
