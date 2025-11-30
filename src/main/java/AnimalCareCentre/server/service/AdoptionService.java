@@ -40,7 +40,16 @@ public class AdoptionService {
         adoption.setAdoptionType(adoptionType);
         adoption.setStatus(Status.PENDING);
         adoption.setRequestDate(LocalDate.now());
-        return adoptionRepository.save(adoption);
+
+        adoptionRepository.save(adoption);
+
+
+        animal.setStatus(Status.UNAVAILABLE);
+        shelterAnimalService.save(animal);
+
+        return adoption;
+
+
     }
 
 
@@ -62,11 +71,6 @@ public class AdoptionService {
         adoptionRepository.save(adoption);
     }
 
-
-
-    private void animalNotAvailable(ShelterAnimal animal) {
-        animal.setAdoptionType(AdoptionType.NOT_AVAILABLE);
-    }
 
     //So the users can see their adoptions request historic
     public List<AdoptionsUserDTO> getUserAdoptions(User user) {

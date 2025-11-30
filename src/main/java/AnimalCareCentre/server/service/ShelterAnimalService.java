@@ -61,4 +61,9 @@ public class ShelterAnimalService {
       return shelterAnimalRepository.findById(id).orElse(null);
     }
 
+  //So that we can change the status of a shelteranimal after the adoption
+  public void save(ShelterAnimal animal) {
+      shelterAnimalRepository.save(animal);
+  }
+
 }
