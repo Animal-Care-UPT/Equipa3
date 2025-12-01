@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import AnimalCareCentre.server.dto.AdminCreateDTO;
 import AnimalCareCentre.server.dto.ChangePasswordDTO;
 import AnimalCareCentre.server.dto.LoginRequestDTO;
+import AnimalCareCentre.server.dto.SecurityQuestionDTO;
 import AnimalCareCentre.server.model.*;
+import AnimalCareCentre.server.repository.AccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -122,5 +124,14 @@ public class AccountController {
     }
     SecurityContextHolder.clearContext();
     return ResponseEntity.ok("Logged out successfully");
+  }
+
+  @PostMapping("/changesq")
+  public ResponseEntity<?> changeSecurityQuestion(@Valid @RequestBody SecurityQuestionDTO requestSecurity){
+    if(accountService.findAccount(requestSecurity.getEmail())== null){
+      return ResponseEntity.status(404).body("");
+    }
+    accountService.changeSQandAns(requestSecurity.getEmail(), requestSecurity.getSecurityQuestion(), requestSecurity.getAnswer());
+    return ResponseEntity.ok("Security info changed successfully");
   }
 }

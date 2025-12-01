@@ -2,12 +2,13 @@ package  AnimalCareCentre.server.controller;
 
 import java.util.List;
 
+
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +42,7 @@ public class SponsorshipController {
   public ResponseEntity<?> createSponsorShip(@Valid @RequestBody SponsorshipDTO sponsorship) {
     String email = SecurityContextHolder.getContext().getAuthentication().getName();
     User user = userService.findByEmail(email);
-    ShelterAnimal animal = shelterAnimalService.findById(sponsorship.getId());
+    ShelterAnimal animal = shelterAnimalService.findShelterAnimalById(sponsorship.getId());
     Float amount = sponsorship.getAmount();
     if(animal.getSponsors().size()>= 3){
       return ResponseEntity.status(409).body("O animal já se encontra com 3 sponsors");

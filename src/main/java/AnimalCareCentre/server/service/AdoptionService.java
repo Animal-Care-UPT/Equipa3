@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service;
 import AnimalCareCentre.server.repository.AdoptionRepository;
 import AnimalCareCentre.server.model.Adoption;
 import AnimalCareCentre.server.model.ShelterAnimal;
-import AnimalCareCentre.server.model.User;
 import AnimalCareCentre.server.enums.Status;
+
+import AnimalCareCentre.server.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class AdoptionService {
 
     //To make an adoption
     public Adoption requestAdoption(User user, Long animalId, AdoptionType adoptionType) {
-        ShelterAnimal animal = shelterAnimalService.findByShelterAnimalById(animalId);
+        ShelterAnimal animal = shelterAnimalService.findShelterAnimalById(animalId);
         Adoption adoption = new Adoption();
         adoption.setUser(user);
         adoption.setAnimal(animal);
