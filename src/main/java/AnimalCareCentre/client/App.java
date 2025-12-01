@@ -526,8 +526,77 @@ public class App extends Application {
 
         switch (option) {
           case 1 -> {
-            shelterHomepage();
-            return;
+              System.out.println("\n=== REGISTER ANIMAL ===");
+
+              System.out.print("Name: ");
+              String name = readLine();
+
+              AnimalType type = (AnimalType) chooseOption(AnimalType.values(), "Type");
+              if (type == null) return;
+
+              List<String> breeds = type.getBreeds();
+              String race = null;
+              if (breeds != null) {
+                  while (true) {
+                      System.out.println("Select Breed:");
+                      for (int i = 0; i < breeds.size(); i++) {
+                          System.out.println((i + 1) + ". " + breeds.get(i));
+                      }
+                      System.out.print("Option: ");
+                      String input = readLine();
+                      try {
+                          int breedOption = Integer.parseInt(input);
+                          if (breedOption >= 1 && breedOption <= breeds.size()) {
+                              race = breeds.get(breedOption - 1);
+                              break;
+                          }
+                      } catch (NumberFormatException ignored) {}
+                      System.out.println("Invalid option, please try again.");
+                  }
+              }
+
+              AnimalSize size = (AnimalSize) chooseOption(AnimalSize.values(), "Size");
+              if (size == null) return;
+
+              AnimalGender gender = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
+              if (gender == null) return;
+
+              System.out.print("Age: ");
+              int age = readInt();
+
+              AnimalColor color = (AnimalColor) chooseOption(AnimalColor.values(), "Color");
+              if (color == null) return;
+
+              System.out.print("Description: ");
+              String description = readLine();
+
+              AdoptionType adoptionType = (AdoptionType) chooseOption(AdoptionType.values(), "Adoption Type");
+              if (adoptionType == null) return;
+
+
+              String json = jsonString(
+                      "name", name,
+                      "type", type.name(),
+                      "race", race,
+                      "age", age,
+                      "color", color.name(),
+                      "size", size.name(),
+                      "gender", gender.name(),
+                      "adoptionType", adoptionType.name(),
+                      "description", description
+              );
+
+
+              ApiResponse response = ApiClient.post("/shelteranimals/register", json);
+
+              if (response.isSuccess()) {
+                  System.out.println("Animal successfully registered!");
+              } else {
+                  System.out.println("Error: " + response.getBody());
+              }
+
+              shelterHomepage();
+              return;
           }
 
           case 2 -> {
