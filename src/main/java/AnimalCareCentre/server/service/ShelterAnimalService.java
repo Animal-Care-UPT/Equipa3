@@ -4,6 +4,8 @@ import AnimalCareCentre.server.enums.*;
 import AnimalCareCentre.server.model.Shelter;
 import AnimalCareCentre.server.model.ShelterAnimal;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -26,39 +28,68 @@ public class ShelterAnimalService {
 
   public List<ShelterAnimal> searchByKeyword(String search) {
     String keyword = "%" + search + "%";
-    return shelterAnimalRepository.findByKeyword(keyword, Status.AVAILABLE);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByKeyword(keyword, Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchByGender(AnimalGender gender) {
-    return shelterAnimalRepository.findByGenderAndStatus(gender, Status.AVAILABLE);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByGenderAndStatus(gender, Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
+  }
+
+  public List<ShelterAnimal> searchBySize(AnimalSize size) {
+    List<ShelterAnimal> animals = shelterAnimalRepository.findBySizeAndStatus(size, Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
+  }
+
+  public List<ShelterAnimal> searchByColor(AnimalColor color) {
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByColorAndStatus(color, Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchByType(AnimalType type) {
-    return shelterAnimalRepository.findByTypeAndStatus(type, Status.AVAILABLE);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByTypeAndStatus(type, Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchAvailableByShelter(Shelter shelter) {
-    return shelterAnimalRepository.findByStatusAndShelter(Status.AVAILABLE, shelter);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByStatusAndShelter(Status.AVAILABLE, shelter);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchByShelter(Shelter shelter) {
-    return shelterAnimalRepository.findByShelter(shelter);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByShelter(shelter);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchAll() {
-    return shelterAnimalRepository.findAll();
+    List<ShelterAnimal> animals = shelterAnimalRepository.findAll();
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchFosterAnimals() {
-    return shelterAnimalRepository.findByAdoptionTypeAndStatus(AdoptionType.FOR_FOSTER,
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByAdoptionTypeAndStatus(AdoptionType.FOR_FOSTER,
         Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
 
   public List<ShelterAnimal> searchAdoptionAnimals() {
-    return shelterAnimalRepository.findByAdoptionTypeAndStatus(AdoptionType.FOR_ADOPTION, Status.AVAILABLE);
+    List<ShelterAnimal> animals = shelterAnimalRepository.findByAdoptionTypeAndStatus(AdoptionType.FOR_ADOPTION,
+        Status.AVAILABLE);
+    animals.sort(Comparator.comparing(ShelterAnimal::getType).thenComparing(ShelterAnimal::getRace));
+    return animals;
   }
-  
-  public ShelterAnimal findById(Long id){
+
+  public ShelterAnimal findById(Long id) {
     return shelterAnimalRepository.findById(id).orElse(null);
   }
 }

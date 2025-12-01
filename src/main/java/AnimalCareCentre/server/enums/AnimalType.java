@@ -10,11 +10,11 @@ import java.util.List;
  */
 public enum AnimalType {
 
-  DOG("Dog", List.of("Labrador Retriever", "Golden Retriever", "Pastor Alemão", "Poodle", "Bulldog Francês", "Beagle",
-          "Chihuahua", "Husky Siberiano", "Dachshund", "Border Collie", "Boxer", "Rottweiler", "Cocker Spaniel",
-          "Shih Tzu", "Pug", "Doberman", "Schnauzer", "Maltês", "Akita Inu", "Samoyed", "Mixed breed", "Doesn't apply")),
   CAT("Cat", List.of("Siamês", "Persa", "Maine Coon", "Bengal", "Sphynx", "British Shorthair", "Ragdoll", "Scottish Fold",
           "Abyssinian", "Norwegian Forest Cat")),
+  DOG("Dog", List.of("Labrador Retriever", "Golden Retriever", "Pastor Alemão", "Poodle", "Bulldog Francês", "Beagle",
+    "Chihuahua", "Husky Siberiano", "Dachshund", "Border Collie", "Boxer", "Rottweiler", "Cocker Spaniel",
+    "Shih Tzu", "Pug", "Doberman", "Schnauzer", "Maltês", "Akita Inu", "Samoyed", "Mixed breed", "Doesn't apply")),
   RABBIT("Rabbit", List.of("Holland Lop", "Netherland Dwarf", "Lionhead", "Mini Rex", "Flemish Giant", "English Angora",
           "French Lop", "Californian", "New Zealand White", "Havana"));
 

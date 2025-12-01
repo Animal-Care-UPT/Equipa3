@@ -70,8 +70,9 @@ public class ShelterAnimalController {
 
   @PreAuthorize("hasRole('SHELTER')")
   @GetMapping("/search/shelter")
-  public ResponseEntity<?> getShelterAnimals(@NotNull @RequestParam long id) {
-    Shelter shelter = shelterService.findById(id);
+  public ResponseEntity<?> getShelterAnimals() {
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    Shelter shelter = shelterService.findByEmail(email);
     if (shelter == null) {
       return ResponseEntity.status(404).body("Shelter not found!");
     }
@@ -106,6 +107,26 @@ public class ShelterAnimalController {
       return ResponseEntity.ok().body(animals);
     }
     return ResponseEntity.status(404).body("There are no animals of this gender!");
+  }
+
+  @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+  @GetMapping("/search/size")
+  public ResponseEntity<?> getAnimalsByGender(@NotNull @RequestParam AnimalSize size) {
+    List<ShelterAnimal> animals = shelterAnimalService.searchBySize(size);
+    if (!animals.isEmpty()) {
+      return ResponseEntity.ok().body(animals);
+    }
+    return ResponseEntity.status(404).body("There are no animals of this size!");
+  }
+
+  @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+  @GetMapping("/search/color")
+  public ResponseEntity<?> getAnimalsByGender(@NotNull @RequestParam AnimalColor color) {
+    List<ShelterAnimal> animals = shelterAnimalService.searchByColor(color);
+    if (!animals.isEmpty()) {
+      return ResponseEntity.ok().body(animals);
+    }
+    return ResponseEntity.status(404).body("There are no animals of this color!");
   }
 
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")

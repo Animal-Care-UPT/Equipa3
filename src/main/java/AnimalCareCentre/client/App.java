@@ -324,9 +324,10 @@ public class App extends Application {
    * This method shows the search animals menu
    */
   public void searchAnimalMenu() {
-    System.out.println("\n=== SEARCH ANIMAL ===");
 
-    String[] options = { "Search by Keyword", "Search by Type", "Search by Color", "Search by Gender" };
+    System.out.println("\n=== SEARCH ANIMAL ===");
+    String[] options = { "Search by Keyword", "Search by Type", "Search by Color", "Search by Gender",
+        "Search by Size" };
     String opt = (String) chooseOption(options, "Search Option");
     if (opt == null) {
       Platform.runLater(this::userHomepage);
@@ -340,13 +341,9 @@ public class App extends Application {
         String encodedSearch = URLEncoder.encode(search, StandardCharsets.UTF_8);
         ApiResponse response = ApiClient.get("/shelteranimals/search?keyword=" + encodedSearch);
 
-        List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+        if (response.isSuccess()) {
+          List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
 
-        if (animals == null || animals.isEmpty()) {
-          System.out.println("\nNo matches! Returning...");
-          searchAnimalMenu();
-          return;
-        } else {
           ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
               "Animal");
           if (choice == null) {
@@ -354,6 +351,9 @@ public class App extends Application {
             return;
           }
           showAnimal(choice);
+        } else {
+          System.out.println(response.getBody());
+          searchAnimalMenu();
         }
       }
 
@@ -365,55 +365,106 @@ public class App extends Application {
         }
 
         ApiResponse response = ApiClient.get("/shelteranimals/search/type?type=" + chosenType.name());
-        System.out.println(response.getBody());
 
-        // System.out.println(response.getBody());
-        //
-        // if (animals == null || animals.isEmpty()) {
-        // System.out.println("\nNo matches! Returning...");
-        // } else {
-        // ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
-        // "Animal");
-        // if (choice == null) {
-        // javafx.application.Platform.runLater(this::userHomepage);
-        // return;
-        // }
-        // showAnimal(choice);
-        // return;
-        // }
-        searchAnimalMenu();
-        return;
+        if (response.isSuccess()) {
+          List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+
+          ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
+              "Animal");
+          if (choice == null) {
+            javafx.application.Platform.runLater(this::userHomepage);
+            return;
+          }
+          showAnimal(choice);
+        } else {
+          System.out.println(response.getBody());
+          searchAnimalMenu();
+        }
       }
 
       case "Search by Color" -> {
-        // AnimalColor chosenColor = (AnimalColor) chooseOption(AnimalColor.values(),
-        // "Color");
-        // if (chosenColor == null) {
-        // javafx.application.Platform.runLater(this::userHomepage);
-        // }
-        // List<ShelterAnimal> animals = manager.searchAnimalByParameter("color",
-        // chosenColor);
-        //
-        // if (animals == null || animals.isEmpty()) {
-        // System.out.println("\nNo matches! Returning...");
-        // } else {
-        // ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
-        // "Animal");
-        // if (choice == null) {
-        // javafx.application.Platform.runLater(this::userHomepage);
-        // return;
-        // }
-        // showAnimal(choice);
-        // }
-        searchAnimalMenu();
-        return;
+        AnimalColor chosenType = (AnimalColor) chooseOption(AnimalColor.values(), "Color");
+        if (chosenType == null) {
+          javafx.application.Platform.runLater(this::userHomepage);
+          return;
+        }
+
+        ApiResponse response = ApiClient.get("/shelteranimals/search/color?color=" + chosenType.name());
+        if (response.isSuccess()) {
+
+          List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+
+          ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
+              "Animal");
+          if (choice == null) {
+            javafx.application.Platform.runLater(this::userHomepage);
+            return;
+          }
+          showAnimal(choice);
+        } else {
+          System.out.println(response.getBody());
+          searchAnimalMenu();
+
+        }
+
       }
 
       case "Search by Gender" -> {
-        searchAnimalMenu();
-        return;
+        AnimalGender chosenType = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
+        if (chosenType == null) {
+          javafx.application.Platform.runLater(this::userHomepage);
+          return;
+        }
+
+        ApiResponse response = ApiClient.get("/shelteranimals/search/gender?gender=" + chosenType.name());
+
+        if (response.isSuccess()) {
+
+          List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+
+          ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
+              "Animal");
+          if (choice == null) {
+            javafx.application.Platform.runLater(this::userHomepage);
+            return;
+          }
+          showAnimal(choice);
+        } else {
+          System.out.println(response.getBody());
+          searchAnimalMenu();
+
+        }
       }
+
+      case "Search by Size" -> {
+        AnimalSize chosenType = (AnimalSize) chooseOption(AnimalSize.values(), "Size");
+        if (chosenType == null) {
+          javafx.application.Platform.runLater(this::userHomepage);
+          return;
+        }
+
+        ApiResponse response = ApiClient.get("/shelteranimals/search/size?size=" + chosenType.name());
+
+        if (response.isSuccess()) {
+
+          List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+
+          ShelterAnimal choice = (ShelterAnimal) chooseOption(animals.toArray(),
+              "Animal");
+          if (choice == null) {
+            javafx.application.Platform.runLater(this::userHomepage);
+            return;
+          }
+          showAnimal(choice);
+        } else {
+          System.out.println(response.getBody());
+          searchAnimalMenu();
+
+        }
+      }
+
     }
+
   }
 
   /**
