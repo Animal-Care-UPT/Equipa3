@@ -2,6 +2,7 @@ package AnimalCareCentre.server.service;
 
 import AnimalCareCentre.server.dto.AdoptionResponseDTO;
 import AnimalCareCentre.server.dto.AdoptionsUserDTO;
+import AnimalCareCentre.server.dto.AdoptionDTO;
 import AnimalCareCentre.server.enums.AdoptionType;
 import org.springframework.stereotype.Service;
 
@@ -99,6 +100,32 @@ public class AdoptionService {
       dto.setAdoptionType(a.getType());
       dto.setStatus(a.getStatus());
       dto.setRequestDate(a.getRequestDate());
+      return dto;
+    }).toList();
+  }
+
+  public List<AdoptionDTO> getAdoptions() {
+
+    List<Adoption> adoptions = adoptionRepository.findByAdoptionType(AdoptionType.FOR_ADOPTION);
+
+    return adoptions.stream().map(a -> {
+      AdoptionDTO dto = new AdoptionDTO();
+      dto.setAnimal(a.getAnimal());
+      dto.setType(a.getType());
+      dto.setAdoptionDate(a.getAdoptionDate());
+      return dto;
+    }).toList();
+  }
+
+  public List<AdoptionDTO> getFosters() {
+
+    List<Adoption> adoptions = adoptionRepository.findByAdoptionType(AdoptionType.FOR_FOSTER);
+
+    return adoptions.stream().map(a -> {
+      AdoptionDTO dto = new AdoptionDTO();
+      dto.setAnimal(a.getAnimal());
+      dto.setType(a.getType());
+      dto.setAdoptionDate(a.getAdoptionDate());
       return dto;
     }).toList();
   }

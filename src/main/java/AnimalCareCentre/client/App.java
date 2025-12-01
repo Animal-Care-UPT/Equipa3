@@ -969,18 +969,42 @@ public class App extends Application {
           }
 
           case 4 -> {
-            adminHomepage();
-            return;
+            ApiResponse response = ApiClient.get("/shelteranimals/all");
+            if (response.isSuccess()) {
+              List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
+              System.out.println(animals);
+              adminHomepage();
+              return;
+            }
           }
 
           case 5 -> {
-            adminHomepage();
-            return;
+            ApiResponse response = ApiClient.get("/adoptions/all");
+            if (response.isSuccess()) {
+              List<Adoption> adoptions = parseList(response.getBody(), Adoption.class);
+              for (Adoption a : adoptions) {
+                System.out.println("User: " + a.user().name());
+                System.out.println("Shelter: " + a.animal().shelter().name());
+                System.out.println("Animal: " + a.animal().name());
+              }
+              adminHomepage();
+              return;
+            }
           }
 
           case 6 -> {
-            adminHomepage();
-            return;
+            ApiResponse response = ApiClient.get("/adoptions/fosters/all");
+            if (response.isSuccess()) {
+              List<Adoption> fosters = parseList(response.getBody(), Adoption.class);
+              for (Adoption f : fosters) {
+                System.out.println("User: " + f.user().name());
+                System.out.println("Shelter: " + f.animal().shelter().name());
+                System.out.println("Animal: " + f.animal().name());
+              }
+
+              adminHomepage();
+              return;
+            }
           }
 
           case 7 -> {
