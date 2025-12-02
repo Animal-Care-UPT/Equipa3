@@ -11,6 +11,7 @@ import AnimalCareCentre.server.model.User;
 import AnimalCareCentre.server.enums.Status;
 import AnimalCareCentre.server.service.AdoptionService;
 import AnimalCareCentre.server.service.ShelterAnimalService;
+import AnimalCareCentre.server.service.ShelterService;
 import AnimalCareCentre.server.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +30,15 @@ public class AdoptionController {
     private final AdoptionService adoptionService;
     private final UserService userService;
     private final ShelterAnimalService shelterAnimalService;
+    private final ShelterService shelterService;
 
 
-    public AdoptionController(AdoptionService adoptionService, ShelterAnimalService shelterAnimalService, UserService userService) {
+    public AdoptionController(AdoptionService adoptionService, ShelterAnimalService shelterAnimalService, UserService userService, ShelterService shelterService) {
 
         this.adoptionService = adoptionService;
         this.userService = userService;
         this.shelterAnimalService = shelterAnimalService;
+        this.shelterService = shelterService;
     }
 
 
@@ -50,7 +53,7 @@ public class AdoptionController {
             return ResponseEntity.status(404).body("This user isn't registered!");
         }
 
-        Adoption adoption = adoptionService.requestAdoption(user, dto.getAnimalId(), dto.getAdoptionType());
+        Adoption adoption = adoptionService.requestAdoption(user, dto.getAnimalId().getId(), dto.getAdoptionType());
         return ResponseEntity.status(201).body(adoption);
     }
 
@@ -80,8 +83,21 @@ public class AdoptionController {
     // Pending request to the shelter
     @PreAuthorize("hasRole('SHELTER')")
     @GetMapping("/pending")
-    public List<AdoptionResponseDTO> pendingRequests(@RequestParam Long shelterId) {
-        return adoptionService.getPendingRequestsByShelter(shelterId); //spring return automatically the 200 ok
+    public ResponseEntity<?> pendingRequests() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Shelter shelter = shelterService.findByEmail(email);
+        if (shelter == null) {
+            return ResponseEntity.status(404).body("Shelter not found!");
+        }
+
+        List<AdoptionResponseDTO> pending = adoptionService.getPendingRequestsByShelter(shelter);
+
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.status(404).body("No pending requests found for this shelter.");
+        }
+
+        return ResponseEntity.ok(pending);
     }
 
     // User historic

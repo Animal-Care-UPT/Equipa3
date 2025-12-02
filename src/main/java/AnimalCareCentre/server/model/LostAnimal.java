@@ -10,7 +10,7 @@ public class LostAnimal extends Animal {
 
   boolean isLost;
 
-  int contact;
+  String contact;
 
   @ManyToOne
   @JoinColumn(name = "account_id")
@@ -33,11 +33,11 @@ public class LostAnimal extends Animal {
     this.location = location;
   }
 
-  public int getContact() {
+  public String getContact() {
     return contact;
   }
 
-  public void setContact(int contact) {
+  public void setContact(String contact) {
     this.contact = contact;
   }
 

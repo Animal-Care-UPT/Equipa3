@@ -3,6 +3,7 @@ package AnimalCareCentre.server.service;
 import AnimalCareCentre.server.dto.AdoptionResponseDTO;
 import AnimalCareCentre.server.dto.AdoptionsUserDTO;
 import AnimalCareCentre.server.enums.AdoptionType;
+import AnimalCareCentre.server.model.Shelter;
 import org.springframework.stereotype.Service;
 
 import AnimalCareCentre.server.repository.AdoptionRepository;
@@ -87,8 +88,8 @@ public class AdoptionService {
   }
 
   // So the shelters can see their pending requests
-  public List<AdoptionResponseDTO> getPendingRequestsByShelter(Long shelterId) {
-    List<Adoption> adoptions = adoptionRepository.findByAnimalShelterIdAndStatus(shelterId, Status.PENDING);
+  public List<AdoptionResponseDTO> getPendingRequestsByShelter(Shelter shelter) {
+    List<Adoption> adoptions = adoptionRepository.findByAnimal_ShelterAndStatus(shelter, Status.PENDING);
 
     return adoptions.stream().map(a -> {
       AdoptionResponseDTO dto = new AdoptionResponseDTO();

@@ -3,12 +3,10 @@ package AnimalCareCentre.client;
 import java.awt.Toolkit;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
+import AnimalCareCentre.server.dto.AdoptionRequestDTO;
+import AnimalCareCentre.server.dto.AdoptionResponseDTO;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -295,14 +293,27 @@ public class App extends Application {
       }
 
       case 2 -> {
-        // manager.adoptAnimal((User) loggedAcc, animal, AdoptionType.FOR_ADOPTION);
-        // System.out.println("Congratulations! Your request to adopt " +
-        // animal.getName() + " has been submitted!");
-        userHomepage();
-        return;
-      }
+          System.out.println("You can " + listed + " this animal.");
+          AdoptionType type = (listed.equals("Adopt")) ? AdoptionType.FOR_ADOPTION : AdoptionType.FOR_FOSTER;
 
-      case 0 -> {
+          String json = jsonString("animalId", animal.id(), "adoptionType", type.name());
+
+          ApiResponse response = ApiClient.post("/adoptions/request", json);
+
+          if (response.isSuccess()) {
+              System.out.println("Your request to " + listed + " " + animal.name() + " has been submitted!");
+          } else {
+              System.out.println("Error: " + response.getBody());
+          }
+
+            userHomepage();
+            return;
+        }
+
+
+
+
+        case 0 -> {
         userHomepage();
         return;
       }
@@ -339,6 +350,7 @@ public class App extends Application {
             javafx.application.Platform.runLater(this::userHomepage);
             return;
           }
+
           showAnimal(choice);
         } else {
           System.out.println(response.getBody());
@@ -516,10 +528,8 @@ public class App extends Application {
         System.out.println("=== SHELTER MENU ===");
         System.out.println("1. Register Animal");
         System.out.println("2. View My Animals");
-        System.out.println("3. View Pending Adoption Requests");
-        System.out.println("4. View Pending Foster Requests");
-        System.out.println("5. View Adoptions");
-        System.out.println("6. View Fosters");
+        System.out.println("3. View Pending Requests");
+        System.out.println("4. View Historic");
         System.out.println("0. Logout");
         System.out.print("Option: ");
         int option = readInt();
@@ -605,24 +615,35 @@ public class App extends Application {
           }
 
           case 3 -> {
-            shelterHomepage();
-            return;
+              System.out.println("\n=== PENDING REQUESTS ===");
+
+              ApiResponse adoptionResponse = ApiClient.get("/adoptions/pending");
+              if (adoptionResponse.isSuccess()) {
+                  List<Adoption> requests = parseList(adoptionResponse.getBody(), Adoption.class);
+
+
+                  System.out.println("Total: " + requests.size() + " Requests ");
+
+                  for (Adoption req : requests) {
+                      System.out.println(req.animalName() + " - " + req.adoptionType() + " - " + req.userId());
+                  }
+
+              }
+              else{
+                  System.out.println("Error: " + adoptionResponse.getBody());
+              }
+
+              shelterHomepage();
+              return;
           }
 
           case 4 -> {
-            shelterHomepage();
+
+
+              shelterHomepage();
             return;
           }
 
-          case 5 -> {
-            shelterHomepage();
-            return;
-          }
-
-          case 6 -> {
-            shelterHomepage();
-            return;
-          }
 
           case 0 -> {
             System.out.println("Exiting terminal menu...");

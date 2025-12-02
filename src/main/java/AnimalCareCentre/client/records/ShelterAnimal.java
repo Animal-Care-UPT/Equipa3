@@ -14,4 +14,7 @@ public record ShelterAnimal(long id, String name, AnimalType type, String race, 
         + "\nColor: " + color + "\nDescription: " + description + "\nListed For: " + adoptionType + "\nShelter: " + shelter.name() + "\n";
   }
 
+    public Long getId() {
+      return id;
+    }
 }
