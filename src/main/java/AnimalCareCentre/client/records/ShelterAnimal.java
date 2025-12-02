@@ -15,4 +15,7 @@ public record ShelterAnimal(long id, String name, AnimalType type, String race, 
         + "\nVacination Status: " + isVacinated + "\nShelter: " + shelter.name() + "\n";
   }
 
+    public Long getId() {
+      return id;
+    }
 }
