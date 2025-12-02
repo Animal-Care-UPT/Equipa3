@@ -12,3 +12,4 @@ public record Adoption(
         Status status,
         LocalDate requestDate
 ) {}
+

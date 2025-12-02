@@ -1,12 +1,8 @@
 package AnimalCareCentre.server.controller;
 
-import AnimalCareCentre.server.dto.AdoptionChangeStatusDTO;
-import AnimalCareCentre.server.dto.AdoptionRequestDTO;
-import AnimalCareCentre.server.dto.AdoptionResponseDTO;
-import AnimalCareCentre.server.dto.AdoptionsUserDTO;
+import AnimalCareCentre.server.dto.*;
 import AnimalCareCentre.server.model.Adoption;
 import AnimalCareCentre.server.model.Shelter;
-import AnimalCareCentre.server.model.ShelterAnimal;
 import AnimalCareCentre.server.model.User;
 import AnimalCareCentre.server.enums.Status;
 import AnimalCareCentre.server.service.AdoptionService;
@@ -16,10 +12,8 @@ import AnimalCareCentre.server.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
 
@@ -39,45 +33,40 @@ public class AdoptionController {
         this.userService = userService;
         this.shelterAnimalService = shelterAnimalService;
         this.shelterService = shelterService;
+  }
+
+  // Adoption request
+  @PreAuthorize("hasRole('USER')")
+  @PostMapping("/request")
+  public ResponseEntity<?> requestAdoption(@Valid @RequestBody AdoptionRequestDTO dto) {
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    User user = userService.findByEmail(email);
+
+    if (user == null) {
+      return ResponseEntity.status(404).body("This user isn't registered!");
     }
 
+    Adoption adoption = adoptionService.requestAdoption(user, dto.getAnimalId(), dto.getAdoptionType());
+    return ResponseEntity.status(201).body(adoption);
+  }
 
-    // Adoption request
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping("/request")
-    public ResponseEntity<?> requestAdoption(@Valid @RequestBody AdoptionRequestDTO dto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userService.findByEmail(email);
+  // Change the status of an adoption/foster request
+  @PreAuthorize("hasRole('SHELTER')")
+  @PutMapping("/change-status")
+  public ResponseEntity<?> changeStatus(@RequestBody AdoptionChangeStatusDTO status) {
 
-        if (user == null) {
-            return ResponseEntity.status(404).body("This user isn't registered!");
-        }
+    Adoption adoption = adoptionService.findAdoptionById(status.getAdoptionId());
+      if (adoption == null) {
+          return ResponseEntity.status(404).body("Adoption request not found!");
+      }
 
-        Adoption adoption = adoptionService.requestAdoption(user, dto.getAnimalId().getId(), dto.getAdoptionType());
-        return ResponseEntity.status(201).body(adoption);
-    }
+      if (adoption.getStatus() != Status.PENDING) {
+          return ResponseEntity.status(400).body("Only pending requests can be updated.");
+      }
 
-    // Change the status of an adoption/foster request
-    @PreAuthorize("hasRole('SHELTER')")
-    @PutMapping("/change-status")
-    public ResponseEntity<?> changeStatus(@RequestBody AdoptionChangeStatusDTO status) {
-
-        Adoption adoption = adoptionService.findAdoptionById(status.getAdoptionId());
-
-        if (adoption == null) {
-            return ResponseEntity.status(404).body("Adoption request not found!");
-        }
-
-        // Validation to make sure only the pending requests have their status changed
-        if (adoption.getStatus() != Status.PENDING) {
-            return ResponseEntity.status(400).body("Only pending requests can be updated.");
-        }
-
-        adoptionService.changeStatus(adoption, status.getNewStatus());
-
-        return ResponseEntity.ok("Status updated successfully.");
-    }
-
+      adoptionService.changeStatus(adoption, status.getNewStatus());
+      return ResponseEntity.ok("Status updated successfully.");
+  }
 
 
     // Pending request to the shelter
@@ -98,25 +87,44 @@ public class AdoptionController {
         }
 
         return ResponseEntity.ok(pending);
+
     }
 
-    // User historic
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/user/adoptions")
-    public ResponseEntity<?> userAdoptions() {
+  // User historic
+  @PreAuthorize("hasRole('USER')")
+  @GetMapping("/user/adoptions")
+  public ResponseEntity<?> userAdoptions() {
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userService.findByEmail(email);
-        if (user == null) {
-            return ResponseEntity.status(404).body("User not found!");
-        }
-
-        List<AdoptionsUserDTO> userAdoptions = adoptionService.getUserAdoptions(user);
-
-        return ResponseEntity.ok(userAdoptions);
+    User user = userService.findByEmail(email);
+    if (user == null) {
+      return ResponseEntity.status(404).body("User not found!");
     }
 
+    List<AdoptionsUserDTO> userAdoptions = adoptionService.getUserAdoptions(user);
+
+    return ResponseEntity.ok(userAdoptions);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/all")
+  public ResponseEntity<?> viewAllAdoptions() {
+    List<AdoptionDTO> adoptions = adoptionService.getAdoptions();
+    if (adoptions.isEmpty()) {
+      return ResponseEntity.status(404).body("There are no adoptions");
+    }
+    return ResponseEntity.ok(adoptions);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/fosters/all")
+  public ResponseEntity<?> viewAllFosters() {
+    List<AdoptionDTO> adoptions = adoptionService.getFosters();
+    if (adoptions.isEmpty()) {
+      return ResponseEntity.status(404).body("There are no adoptions");
+    }
+    return ResponseEntity.ok(adoptions);
+  }
 
 }
-
