@@ -36,6 +36,7 @@ public class App extends Application {
   private static final ObjectMapper mapper = new ObjectMapper()
       .registerModule(new JavaTimeModule())
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static String loggedRole;
 
   public void start(Stage stage) {
     App.stage = stage;
@@ -96,9 +97,11 @@ public class App extends Application {
         return;
       }
 
-      if (response.getBody().equals("ROLE_USER")) {
+      loggedRole = response.getBody();
+
+      if (loggedRole.equals("ROLE_USER")) {
         userHomepage();
-      } else if (response.getBody().equals("ROLE_SHELTER")) {
+      } else if (loggedRole.equals("ROLE_SHELTER")) {
         shelterHomepage();
       } else {
         adminHomepage();
@@ -327,7 +330,7 @@ public class App extends Application {
       case 1 -> {
         System.out.println("Insert the amount of money you wish to give as a sponsorship");
         Float amount = readFloat();
-        String json = jsonString("id", animal.id(), "amount", amount);
+        String json = jsonString("animalId", animal.id(), "amount", amount);
         ApiResponse response = ApiClient.post("/sponsorships/create", json);
         System.out.println(response.getBody());
         userHomepage();
@@ -338,7 +341,7 @@ public class App extends Application {
         System.out.println("You can " + listed + " this animal.");
         AdoptionType type = (listed.equals("Adopt")) ? AdoptionType.FOR_ADOPTION : AdoptionType.FOR_FOSTER;
 
-        String json = jsonString("animalId", animal.id(), "adoptionType", type.name());
+        String json = jsonString("animalId", animal.id(), "type", type.name());
 
         ApiResponse response = ApiClient.post("/adoptions/request", json);
 
@@ -561,8 +564,14 @@ public class App extends Application {
     switch (opc) {
 
       case 1 -> {
-        ApiResponse response = ApiClient.put("/vacination?id=" + animal.id(), "");
+        ApiResponse response = ApiClient.put("/shelteranimals/vacination?id=" + animal.id(), "");
         System.out.println(response.getBody());
+
+        ApiResponse updated = ApiClient.get("/shelteranimals/search/byid?id=" + animal.id());
+        if (updated.isSuccess()) {
+          animal = parseResponse(updated.getBody(), ShelterAnimal.class);
+        }
+
         manageAnimal(animal);
       }
 
@@ -579,20 +588,38 @@ public class App extends Application {
           }
         }
 
-        ApiResponse response = ApiClient.put("/age?id=" + animal.id() + "&age=" + age, "");
+        ApiResponse response = ApiClient.put("/shelteranimals/age?id=" + animal.id() + "&age=" + age, "");
         System.out.println(response.getBody());
+
+        ApiResponse updated = ApiClient.get("/shelteranimals/search/byid?id=" + animal.id());
+        if (updated.isSuccess()) {
+          animal = parseResponse(updated.getBody(), ShelterAnimal.class);
+        }
+
         manageAnimal(animal);
       }
 
       case 3 -> {
-        ApiResponse response = ApiClient.put("/adoptiontype?id=" + animal.id(), "");
+        ApiResponse response = ApiClient.put("/shelteranimals/adoptiontype?id=" + animal.id(), "");
         System.out.println(response.getBody());
+
+        ApiResponse updated = ApiClient.get("/shelteranimals/search/byid?id=" + animal.id());
+        if (updated.isSuccess()) {
+          animal = parseResponse(updated.getBody(), ShelterAnimal.class);
+        }
+
         manageAnimal(animal);
       }
 
       case 4 -> {
-        ApiResponse response = ApiClient.put("/status?id=" + animal.id(), "");
+        ApiResponse response = ApiClient.put("/shelteranimals/status?id=" + animal.id(), "");
         System.out.println(response.getBody());
+
+        ApiResponse updated = ApiClient.get("/shelteranimals/search/byid?id=" + animal.id());
+        if (updated.isSuccess()) {
+          animal = parseResponse(updated.getBody(), ShelterAnimal.class);
+        }
+
         manageAnimal(animal);
       }
 
@@ -614,7 +641,7 @@ public class App extends Application {
    */
   public void shelterViewAnimals() {
 
-    ApiResponse response = ApiClient.get("/shelteranimals/search/own");
+    ApiResponse response = ApiClient.get("/shelteranimals/search/self");
 
     if (response.isSuccess()) {
 
@@ -650,8 +677,8 @@ public class App extends Application {
         System.out.println("1. Register Animal");
         System.out.println("2. View My Animals");
         System.out.println("3. View Pending Requests And Change their status");
-        System.out.println("4. View Historic");
-        System.out.println("5. Change Security Answer");
+        System.out.println("4. Change Security Answer");
+        System.out.println("5. Lost and Found");
         System.out.println("0. Logout");
         System.out.print("Option: ");
         int option = readInt();
@@ -755,7 +782,7 @@ public class App extends Application {
               System.out.println("Total: " + requests.size() + " Requests ");
 
               for (Adoption req : requests) {
-                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
+                System.out.println(req.animal().name() + " - " + req.type() + " - " + req.user().name());
               }
 
               Adoption choice = (Adoption) chooseOption(requests.toArray(), "Pending Request");
@@ -767,7 +794,7 @@ public class App extends Application {
               System.out.println("\n=== Request Details ===");
               System.out.println("Animal: " + choice.animal().name());
               System.out.println("Requested by: " + choice.user().name());
-              System.out.println("Type: " + choice.adoptionType());
+              System.out.println("Type: " + choice.type());
               System.out.println("Request Date: " + choice.requestDate());
               System.out.println("========================\n");
 
@@ -781,7 +808,7 @@ public class App extends Application {
               Status newStatus = action.equals("Accept") ? Status.ACCEPTED : Status.REJECTED;
 
               String json = jsonString(
-                  "adoptionId", choice.adoptionId(),
+                  "adoptionId", choice.id(),
                   "newStatus", newStatus.name());
 
               ApiResponse statusResponse = ApiClient.put("/adoptions/change/status", json);
@@ -802,19 +829,22 @@ public class App extends Application {
 
           case 4 -> {
 
-            shelterHomepage();
-            return;
-          }
-
-          case 5 -> {
-
             SecurityQuestion question = (SecurityQuestion) chooseOption(SecurityQuestion.values(), "SecurityQuestion");
+            if (question == null) {
+              shelterHomepage();
+              return;
+            }
             System.out.println("Answer: ");
             String answer = readLine();
             String json = jsonString("securityQuestion", question, "answer", answer);
             ApiResponse response = ApiClient.put("/accounts/changesq", json);
             System.out.println(response.getBody());
             shelterHomepage();
+            return;
+          }
+
+          case 5 -> {
+            lostAndFoundHomePage();
             return;
           }
 
@@ -869,31 +899,7 @@ public class App extends Application {
   public void showShelter(Shelter shelter) {
     System.out.println(shelter);
     System.out.println("\n");
-    String[] options = { "Donate to Shelter", "View Shelter Animals" };
-    String opt = (String) chooseOption(options, "Search Option");
-    if (opt == null) {
-      Platform.runLater(this::userHomepage);
-      return;
-    }
-
-    switch (opt) {
-      case "Donate to Shelter" -> {
-        // donation stuff
-        showShelter(shelter);
-        return;
-      }
-
-      case "View Shelter Animals" -> {
-        showShelterAnimals(shelter);
-        return;
-      }
-
-      default -> {
-        System.out.println("Invalid option!");
-        showShelter(shelter);
-        return;
-      }
-    }
+    showShelterAnimals(shelter);
   }
 
   /**
@@ -966,7 +972,7 @@ public class App extends Application {
               System.out.println("Total: " + requests.size() + " Requests ");
 
               for (Adoption req : requests) {
-                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
+                System.out.println(req.animal().name() + " - " + req.type() + " - " + req.user().name());
               }
 
             } else {
@@ -986,7 +992,7 @@ public class App extends Application {
               System.out.println("Total: " + requests.size() + " Requests ");
 
               for (Adoption req : requests) {
-                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
+                System.out.println(req.animal().name() + " - " + req.type() + " - " + req.user().name());
               }
 
             } else {
@@ -1015,6 +1021,10 @@ public class App extends Application {
 
           case 7 -> {
             SecurityQuestion question = (SecurityQuestion) chooseOption(SecurityQuestion.values(), "SecurityQuestion");
+            if (question == null) {
+              userHomepage();
+              return;
+            }
             System.out.println("Answer: ");
             String answer = readLine();
             String json = jsonString("securityQuestion", question, "answer", answer);
@@ -1049,6 +1059,7 @@ public class App extends Application {
    */
   public void displayShelterForAdmin(Shelter shelter) {
     System.out.println(shelter);
+    System.out.println("Status: " + shelter.status().toString());
     System.out.println("\n");
     String[] options = { "Change Shelter Status", "View All Shelter Animals" };
     String opt = (String) chooseOption(options, "Search Option");
@@ -1198,13 +1209,13 @@ public class App extends Application {
 
               Shelter choice = (Shelter) chooseOption(shelters.toArray(), "Shelter");
               if (choice == null) {
-                javafx.application.Platform.runLater(this::userHomepage);
+                javafx.application.Platform.runLater(this::adminHomepage);
                 return;
               }
               displayShelterForAdmin(choice);
             } else {
               System.out.println(response.getBody());
-              userHomepage();
+              adminHomepage();
             }
 
             return;
@@ -1223,13 +1234,15 @@ public class App extends Application {
           }
 
           case 4 -> {
-            ApiResponse response = ApiClient.get("/shelteranimals/all");
+            ApiResponse response = ApiClient.get("/shelteranimals/search/all");
             if (response.isSuccess()) {
               List<ShelterAnimal> animals = parseList(response.getBody(), ShelterAnimal.class);
               System.out.println(animals);
-              adminHomepage();
-              return;
+            } else {
+              System.out.println(response.getBody());
             }
+            adminHomepage();
+            return;
           }
 
           case 5 -> {
@@ -1241,9 +1254,11 @@ public class App extends Application {
                 System.out.println("Shelter: " + a.animal().shelter().name());
                 System.out.println("Animal: " + a.animal().name());
               }
-              adminHomepage();
-              return;
+            } else {
+              System.out.println(response.getBody());
             }
+            adminHomepage();
+            return;
           }
 
           case 6 -> {
@@ -1256,25 +1271,31 @@ public class App extends Application {
                 System.out.println("Animal: " + f.animal().name());
               }
 
-              adminHomepage();
-              return;
+            } else {
+              System.out.println(response.getBody());
             }
+            adminHomepage();
+            return;
           }
 
           case 7 -> {
-            // lostAndFoundMenu();
-            adminHomepage();
+            lostAndFoundHomePage();
             return;
           }
 
           case 8 -> {
             SecurityQuestion question = (SecurityQuestion) chooseOption(SecurityQuestion.values(), "SecurityQuestion");
+            if (question == null) {
+              adminHomepage();
+              return;
+            }
+
             System.out.println("Answer: ");
             String answer = readLine();
             String json = jsonString("securityQuestion", question, "answer", answer);
             ApiResponse response = ApiClient.put("/accounts/changesq", json);
             System.out.println(response.getBody());
-            shelterHomepage();
+            adminHomepage();
             return;
           }
 
@@ -1331,8 +1352,8 @@ public class App extends Application {
         System.out.println("=== LOST AND FOUND MENU===");
         System.out.println("1. Register Lost Animal");
         System.out.println("2. View Lost Animals");
-        System.out.println("4. Remove Posting");
-        System.out.println("5. View my lost animals");
+        System.out.println("3. Remove Posting");
+        System.out.println("4. View my lost animals");
         System.out.println("0. Logout");
         System.out.print("Option: ");
         int option = readInt();
@@ -1420,134 +1441,67 @@ public class App extends Application {
 
           case 2 -> {
             ApiResponse response = ApiClient.get("/lostandfound/showlostanimals");
-            List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
-            for (LostAnimal animal : animals) {
-              System.out.println(animal.toString() + "\n");
-
-            }
-            lostAndFoundHomePage();
-            return;
-          }
-
-          case 3 -> {
-            ApiResponse response = ApiClient.get("/lostandfound/showrescuedanimals");
-            List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
-            for (LostAnimal animal : animals) {
-              System.out.println(animal.toString() + "\n");
-
-            }
-            shelterHomepage();
-            return;
-          }
-
-          case 4 -> {
-            ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
-            List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
-            LostAnimal choice = (LostAnimal) chooseOption(animals.toArray(), "animal");
-
-            ApiResponse request = ApiClient.delete("/lostandfound/delete/" + choice.id());
-            if(request.isSuccess()){
-                System.out.println("Removed posting successfully!");
-            }
-            lostAndFoundHomePage();
-            return;
-          }
-
-          case 5 -> {
-            ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
-            System.out.println(response.getBody());
-            List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
-            for (LostAnimal animal : animals) {
-              System.out.println(animal.toString() + "\n");
-
-            }
-            lostAndFoundHomePage();
-            return;
-
-          }
-
-          case 6 -> {
-            System.out.println("\n=== REGISTER LOST ANIMAL ===");
-            System.out.print("Name (if available) :");
-            String name = readLine();
-
-            AnimalType type = (AnimalType) chooseOption(AnimalType.values(), "Type");
-            if (type == null)
-              return;
-
-            List<String> breeds = type.getBreeds();
-            String race = null;
-            if (breeds != null) {
-              while (true) {
-                System.out.println("Select Breed:");
-                for (int i = 0; i < breeds.size(); i++) {
-                  System.out.println((i + 1) + ". " + breeds.get(i));
-                }
-                System.out.print("Option: ");
-                String input = readLine();
-                try {
-                  int breedOption = Integer.parseInt(input);
-                  if (breedOption >= 1 && breedOption <= breeds.size()) {
-                    race = breeds.get(breedOption - 1);
-                    break;
-                  }
-                } catch (NumberFormatException ignored) {
-                }
-                System.out.println("Invalid option, please try again.");
-              }
-            }
-
-            AnimalSize size = (AnimalSize) chooseOption(AnimalSize.values(), "Size");
-            if (size == null)
-              return;
-
-            AnimalGender gender = (AnimalGender) chooseOption(AnimalGender.values(), "Gender");
-            if (gender == null)
-              return;
-
-            System.out.print("Age: ");
-            int age = readInt();
-
-            AnimalColor color = (AnimalColor) chooseOption(AnimalColor.values(), "Color");
-            if (color == null)
-              return;
-
-            System.out.println("Location");
-            String location = readLine();
-
-            System.out.print("Description: ");
-            String description = readLine();
-
-            System.out.println("Contact: ");
-            int contact = readInt();
-
-            String json = jsonString(
-                "name", name,
-                "type", type.name(),
-                "race", race,
-                "age", age,
-                "color", color.name(),
-                "size", size.name(),
-                "gender", gender.name(),
-                "contact", contact,
-                "description", description,
-                "location", location,
-                "isLost", false);
-
-            ApiResponse response = ApiClient.post("/lostandfound/create", json);
-
             if (response.isSuccess()) {
-              System.out.println("Lost animal successfully registered");
+              List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
+              for (LostAnimal animal : animals) {
+                System.out.println(animal.toString() + "\n");
+              }
             } else {
               System.out.println("Error: " + response.getBody());
             }
 
             lostAndFoundHomePage();
+            return;
+          }
+
+          case 3 -> {
+            ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
+            if (response.isSuccess()) {
+              List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
+              LostAnimal choice = (LostAnimal) chooseOption(animals.toArray(), "animal");
+
+              if (choice == null) {
+                lostAndFoundHomePage();
+                return;
+              }
+
+              ApiResponse request = ApiClient.delete("/lostandfound/delete/" + choice.id());
+              if (request.isSuccess()) {
+                System.out.println("Removed posting successfully!");
+              }
+
+            } else {
+              System.out.println("Error: " + response.getBody());
+            }
+            lostAndFoundHomePage();
+            return;
+          }
+
+          case 4 -> {
+            ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
+            System.out.println(response.getBody());
+            if (response.isSuccess()) {
+              List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
+              for (LostAnimal animal : animals) {
+                System.out.println(animal.toString() + "\n");
+              }
+            } else {
+              System.out.println("Error: " + response.getBody());
+            }
+            lostAndFoundHomePage();
+            return;
+
           }
 
           case 0 -> {
             System.out.println("Exiting terminal menu...");
-            javafx.application.Platform.runLater(this::showMainMenu);
+            if (loggedRole.equals("ROLE_USER")) {
+              javafx.application.Platform.runLater(this::userHomepage);
+            } else if (loggedRole.equals("ROLE_SHELTER")) {
+              javafx.application.Platform.runLater(this::shelterHomepage);
+            } else {
+              javafx.application.Platform.runLater(this::adminHomepage);
+            }
           }
 
           default -> {
@@ -1565,6 +1519,7 @@ public class App extends Application {
     });
     consoleThread.setDaemon(true);
     consoleThread.start();
+
   }
 
   /**

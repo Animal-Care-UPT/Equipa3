@@ -1,30 +1,45 @@
 package AnimalCareCentre.server.dto;
 
-import jakarta.validation.constraints.NotNull;
-import AnimalCareCentre.server.model.*;
+import java.time.LocalDate;
 
 public class SponsorshipDTO {
-
-  private User user;
-  @NotNull
-  private ShelterAnimal animal;
-  @NotNull
+  private Long userId;
+  private String userName;
+  private Long animalId;
+  private String animalName;
   private Float amount;
+  private LocalDate startDate;
 
-  public User getUser() {
-    return user;
+  public Long getUserId() {
+    return userId;
   }
 
-  public void setUser(User user) {
-    this.user = user;
+  public void setUserId(Long userId) {
+    this.userId = userId;
   }
 
-  public ShelterAnimal getAnimal() {
-    return animal;
+  public String getUserName() {
+    return userName;
   }
 
-  public void setAnimal(ShelterAnimal animal) {
-    this.animal = animal;
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
+
+  public Long getAnimalId() {
+    return animalId;
+  }
+
+  public void setAnimalId(Long animalId) {
+    this.animalId = animalId;
+  }
+
+  public String getAnimalName() {
+    return animalName;
+  }
+
+  public void setAnimalName(String animalName) {
+    this.animalName = animalName;
   }
 
   public Float getAmount() {
@@ -33,6 +48,14 @@ public class SponsorshipDTO {
 
   public void setAmount(Float amount) {
     this.amount = amount;
+  }
+
+  public LocalDate getStartDate() {
+    return startDate;
+  }
+
+  public void setStartDate(LocalDate startDate) {
+    this.startDate = startDate;
   }
 
 }

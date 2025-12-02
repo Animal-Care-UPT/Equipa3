@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.checkerframework.checker.units.qual.min;
-import org.springframework.beans.factory.annotation.Value;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,64 +33,72 @@ public class Sponsorship {
   @Column(name = "Sponsorship_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
+
   @ManyToOne
   @JoinColumn(name = "user_id")
+  @JsonBackReference("user-sponsorships")
   private User user;
+
   @ManyToOne
   @JoinColumn(name = "animal_id")
+  @JsonBackReference("animal-sponsorships")
   private ShelterAnimal animal;
+
   private LocalDate startDate;
+
   @Min(5)
   @Max(1000)
   @NotNull(message = "The amount is mandatory")
   private Float amount;
+
   @OneToMany(mappedBy = "sponsorship", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Donation> donations = new ArrayList<>();
 
   public Sponsorship() {
   }
 
-  // Getters area
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
   public User getUser() {
     return user;
-  }
-
-  public ShelterAnimal getAnimal() {
-    return animal;
-  }
-
-  public void addDonation(Donation donation) {
-    donations.add(donation);
-    donation.setSponsorship(this);
-  }
-
-  @Override
-  public String toString() {
-    return "\nUser: " + user.getName() + "\nStart date: " + startDate + "\nAmount: " + amount + "\nAnimal: " + animal.getName() + "\nShelter: " + animal.getShelter().getName();
-  }
-
-    public float getAmount() {
-        return amount;
-    }
-
-    public void setId(long id) {
-    this.id = id;
   }
 
   public void setUser(User user) {
     this.user = user;
   }
 
+  public ShelterAnimal getAnimal() {
+    return animal;
+  }
+
   public void setAnimal(ShelterAnimal animal) {
     this.animal = animal;
+  }
+
+  public LocalDate getStartDate() {
+    return startDate;
   }
 
   public void setStartDate(LocalDate startDate) {
     this.startDate = startDate;
   }
 
-  public void setAmount(float amount) {
+  public Float getAmount() {
+    return amount;
+  }
+
+  public void setAmount(Float amount) {
     this.amount = amount;
+  }
+
+  public List<Donation> getDonations() {
+    return donations;
   }
 
   public void setDonations(List<Donation> donations) {

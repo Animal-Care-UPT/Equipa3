@@ -1,6 +1,9 @@
 package AnimalCareCentre.server.model;
 
 import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import AnimalCareCentre.server.enums.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,9 +30,11 @@ public class Adoption {
   private long id;
   @ManyToOne
   @JoinColumn(name = "user_id")
+  @JsonBackReference("user-adoptions")
   private User user;
   @ManyToOne
   @JoinColumn(name = "animal_id")
+  @JsonBackReference("animal-adoptions")
   private ShelterAnimal animal;
   private LocalDate requestDate;
   private LocalDate adoptionDate;
