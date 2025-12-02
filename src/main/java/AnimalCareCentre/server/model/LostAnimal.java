@@ -1,6 +1,5 @@
 package AnimalCareCentre.server.model;
 
-import AnimalCareCentre.server.enums.*;
 import jakarta.persistence.*;
 
 @Entity
@@ -45,15 +44,16 @@ public class LostAnimal extends Animal {
     return account;
   }
 
-  public void setAccount(Account account) {
+    public boolean getIsLost() {
+        return isLost;
+    }
+
+    public void setIsLost(boolean lost) {
+        isLost = lost;
+    }
+
+    public void setAccount(Account account) {
     this.account = account;
   }
 
-  public boolean isLost() {
-    return isLost;
-  }
-
-  public void setLost(boolean lost) {
-    isLost = lost;
-  }
 }

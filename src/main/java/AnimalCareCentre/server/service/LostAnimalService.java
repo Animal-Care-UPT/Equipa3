@@ -5,7 +5,6 @@ import AnimalCareCentre.server.enums.AnimalColor;
 import AnimalCareCentre.server.enums.AnimalSize;
 import AnimalCareCentre.server.model.Account;
 import AnimalCareCentre.server.model.LostAnimal;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +22,8 @@ public class LostAnimalService {
     this.lostAnimalRepository = lostAnimalRepository;
   }
 
-  public List<LostAnimal> findLostAnimalsByAccount(Account account){
-      return lostAnimalRepository.findLostAnimalByAccount(account);
+  public List<LostAnimal> findLostAnimalsByAccount(long accountId){
+      return lostAnimalRepository.findByAccountId(accountId);
   }
 
   public List<LostAnimal> findLostAnimals(){
@@ -63,5 +62,9 @@ public class LostAnimalService {
 
     public void delete(LostAnimal lostAnimal) {
       lostAnimalRepository.delete(lostAnimal);
+    }
+
+    public void deleteById(@NotNull long lostAnimalId) {
+      lostAnimalRepository.deleteById(lostAnimalId);
     }
 }

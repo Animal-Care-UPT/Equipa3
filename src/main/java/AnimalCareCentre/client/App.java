@@ -1098,10 +1098,8 @@ public class App extends Application {
                 System.out.println("=== LOST AND FOUND MENU===");
                 System.out.println("1. Register Lost Animal");
                 System.out.println("2. View Lost Animals");
-                System.out.println("3. View rescued animals");
                 System.out.println("4. Remove Posting");
                 System.out.println("5. View my lost animals");
-                System.out.println("6. Did you find and animal ? ");
                 System.out.println("0. Logout");
                 System.out.print("Option: ");
                 int option = readInt();
@@ -1174,7 +1172,7 @@ public class App extends Application {
                                 "contact", contact,
                                 "description", description,
                                 "location", location,
-                                "isLost", true
+                                "isLost",true
                         );
 
 
@@ -1216,13 +1214,16 @@ public class App extends Application {
                         ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
                         List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
                         LostAnimal choice = (LostAnimal)  chooseOption(animals.toArray(),"animal");
-                        ApiResponse request= ApiClient.delete("/lostandfound/delete",jsonString(choice));
+
+                        ApiResponse request= ApiClient.delete("/lostandfound/delete/"+choice.id());
+                        System.out.println(request.getBody()+request.getStatusCode());
                         lostAndFoundHomePage();
                         return;
                     }
 
                     case 5 -> {
                         ApiResponse response = ApiClient.get("/lostandfound/showanimalsbyaccount");
+                        System.out.println(response.getBody());
                         List<LostAnimal> animals = parseList(response.getBody(), LostAnimal.class);
                         for (LostAnimal animal : animals){
                             System.out.println(animal.toString()+"\n");
@@ -1300,7 +1301,7 @@ public class App extends Application {
                                 "contact", contact,
                                 "description", description,
                                 "location", location,
-                                "isLost", false
+                                "isLost",false
                         );
 
 

@@ -5,13 +5,11 @@ import AnimalCareCentre.server.model.Account;
 import AnimalCareCentre.server.model.LostAnimal;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import AnimalCareCentre.server.model.LostAnimal;
-
 import java.util.List;
 
 public interface LostAnimalRepository extends JpaRepository<LostAnimal, Long> {
 
-   public List<LostAnimal> findLostAnimalByAccount(Account account);
+   public List<LostAnimal> findByAccountId(long accountId);
 
    public List<LostAnimal> findByLocation(String location);
 

@@ -4,7 +4,6 @@ import AnimalCareCentre.server.enums.AnimalColor;
 import AnimalCareCentre.server.enums.AnimalType;
 import AnimalCareCentre.server.model.Account;
 import AnimalCareCentre.server.model.LostAnimal;
-import AnimalCareCentre.server.model.ShelterAnimal;
 import AnimalCareCentre.server.service.AccountService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -39,7 +38,6 @@ public class LostAnimalController {
         }
         return ResponseEntity.status(404).body("There are no registered animals as rescued");
     }
-    @P
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
   @GetMapping("/showlostanimals")
   public ResponseEntity<?> showLostAnimals() {
@@ -51,12 +49,12 @@ public class LostAnimalController {
       return ResponseEntity.status(404).body("There are no registered animals in Lost and Found");
   }
   @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-  @GetMapping("/showLostAnimal")
+  @GetMapping("/showanimalsbyaccount")
   public ResponseEntity<?> showLostAnimalsByAccount(){
       Account account = accountService.findAccount( SecurityContextHolder.getContext().getAuthentication().getName());
 
 
-      List<LostAnimal> results = lostAnimalService.findLostAnimalsByAccount(account);
+      List<LostAnimal> results = lostAnimalService.findLostAnimalsByAccount(account.getId());
       results.sort(Comparator.comparing(LostAnimal::getLocation));
       if (!results.isEmpty()) {
           return ResponseEntity.ok().body(results);
@@ -109,12 +107,12 @@ public class LostAnimalController {
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> findAnimal(@Valid @RequestBody LostAnimal lostAnimal){
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAnimal(@PathVariable long id){
 
 
-        lostAnimalService.delete(lostAnimal);
-        return ResponseEntity.status(200).body(lostAnimal);
+        lostAnimalService.deleteById(id);
+        return ResponseEntity.status(200).body(id);
 
 
     }
