@@ -5,8 +5,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import AnimalCareCentre.server.dto.AdoptionRequestDTO;
-import AnimalCareCentre.server.dto.AdoptionResponseDTO;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -337,27 +335,24 @@ public class App extends Application {
       }
 
       case 2 -> {
-          System.out.println("You can " + listed + " this animal.");
-          AdoptionType type = (listed.equals("Adopt")) ? AdoptionType.FOR_ADOPTION : AdoptionType.FOR_FOSTER;
+        System.out.println("You can " + listed + " this animal.");
+        AdoptionType type = (listed.equals("Adopt")) ? AdoptionType.FOR_ADOPTION : AdoptionType.FOR_FOSTER;
 
-          String json = jsonString("animalId", animal.id(), "adoptionType", type.name());
+        String json = jsonString("animalId", animal.id(), "adoptionType", type.name());
 
-          ApiResponse response = ApiClient.post("/adoptions/request", json);
+        ApiResponse response = ApiClient.post("/adoptions/request", json);
 
-          if (response.isSuccess()) {
-              System.out.println("Your request to " + listed + " " + animal.name() + " has been submitted!");
-          } else {
-              System.out.println("Error: " + response.getBody());
-          }
-
-            userHomepage();
-            return;
+        if (response.isSuccess()) {
+          System.out.println("Your request to " + listed + " " + animal.name() + " has been submitted!");
+        } else {
+          System.out.println("Error: " + response.getBody());
         }
 
+        userHomepage();
+        return;
+      }
 
-
-
-        case 0 -> {
+      case 0 -> {
         userHomepage();
         return;
       }
@@ -745,75 +740,71 @@ public class App extends Application {
           }
 
           case 3 -> {
-              System.out.println("\n=== PENDING REQUESTS ===");
+            System.out.println("\n=== PENDING REQUESTS ===");
 
-              ApiResponse changeStatusResponse = ApiClient.get("/adoptions/pending");
-              if (changeStatusResponse.isSuccess()) {
-                  List<Adoption> requests = parseList(changeStatusResponse.getBody(), Adoption.class);
+            ApiResponse changeStatusResponse = ApiClient.get("/adoptions/pending");
+            if (changeStatusResponse.isSuccess()) {
+              List<Adoption> requests = parseList(changeStatusResponse.getBody(), Adoption.class);
 
-                  if (requests.isEmpty()) {
-                      System.out.println("No pending requests at the moment.");
-                      shelterHomepage();
-                      return;
-                  }
-
-                  System.out.println("Total: " + requests.size() + " Requests ");
-
-                  for (Adoption req : requests) {
-                      System.out.println(req.animalName() + " - " + req.adoptionType() + " - " + req.userId());
-                  }
-
-
-                  Adoption choice = (Adoption) chooseOption(requests.toArray(), "Pending Request");
-                  if (choice == null) {
-                      javafx.application.Platform.runLater(this::shelterHomepage);
-                      return;
-                  }
-
-                  System.out.println("\n=== Request Details ===");
-                  System.out.println("Animal: " + choice.animalName());
-                  System.out.println("Requested by: " + choice.userId());
-                  System.out.println("Type: " + choice.adoptionType());
-                  System.out.println("Request Date: " + choice.requestDate());
-                  System.out.println("========================\n");
-
-                  String[] requestActions = { "Accept", "Reject" };
-                  String action = (String) chooseOption(requestActions, "Action");
-                  if (action == null) {
-                      javafx.application.Platform.runLater(this::shelterHomepage);
-                      return;
-                  }
-
-                  Status newStatus = action.equals("Accept") ? Status.ACCEPTED : Status.REJECTED;
-
-                  String json = jsonString(
-                          "adoptionId", choice.adoptionId(),
-                          "newStatus", newStatus.name()
-                  );
-
-                  ApiResponse statusResponse = ApiClient.put("/adoptions/change/status", json);
-
-                  if (statusResponse.isSuccess()) {
-                      System.out.println("Request " + newStatus.name().toLowerCase() + " successfully!");
-                  } else {
-                      System.out.println("Error: " + statusResponse.getBody());
-                  }
-
-              } else {
-                  System.out.println("Error loading requests: " + changeStatusResponse.getBody());
+              if (requests.isEmpty()) {
+                System.out.println("No pending requests at the moment.");
+                shelterHomepage();
+                return;
               }
 
-              shelterHomepage();
-              return;
+              System.out.println("Total: " + requests.size() + " Requests ");
+
+              for (Adoption req : requests) {
+                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
+              }
+
+              Adoption choice = (Adoption) chooseOption(requests.toArray(), "Pending Request");
+              if (choice == null) {
+                javafx.application.Platform.runLater(this::shelterHomepage);
+                return;
+              }
+
+              System.out.println("\n=== Request Details ===");
+              System.out.println("Animal: " + choice.animal().name());
+              System.out.println("Requested by: " + choice.user().name());
+              System.out.println("Type: " + choice.adoptionType());
+              System.out.println("Request Date: " + choice.requestDate());
+              System.out.println("========================\n");
+
+              String[] requestActions = { "Accept", "Reject" };
+              String action = (String) chooseOption(requestActions, "Action");
+              if (action == null) {
+                javafx.application.Platform.runLater(this::shelterHomepage);
+                return;
+              }
+
+              Status newStatus = action.equals("Accept") ? Status.ACCEPTED : Status.REJECTED;
+
+              String json = jsonString(
+                  "adoptionId", choice.adoptionId(),
+                  "newStatus", newStatus.name());
+
+              ApiResponse statusResponse = ApiClient.put("/adoptions/change/status", json);
+
+              if (statusResponse.isSuccess()) {
+                System.out.println("Request " + newStatus.name().toLowerCase() + " successfully!");
+              } else {
+                System.out.println("Error: " + statusResponse.getBody());
+              }
+
+            } else {
+              System.out.println("Error loading requests: " + changeStatusResponse.getBody());
+            }
+
+            shelterHomepage();
+            return;
           }
 
           case 4 -> {
 
-
-              shelterHomepage();
+            shelterHomepage();
             return;
           }
-
 
           case 5 -> {
 
@@ -966,45 +957,41 @@ public class App extends Application {
           }
 
           case 3 -> {
-              System.out.println("\n=== PENDING REQUESTS ===");
+            System.out.println("\n=== PENDING REQUESTS ===");
 
-              ApiResponse requestResponse = ApiClient.get("/adoptions/user/pending");
-              if (requestResponse.isSuccess()) {
-                  List<Adoption> requests = parseList(requestResponse.getBody(), Adoption.class);
+            ApiResponse requestResponse = ApiClient.get("/adoptions/user/pending");
+            if (requestResponse.isSuccess()) {
+              List<Adoption> requests = parseList(requestResponse.getBody(), Adoption.class);
 
+              System.out.println("Total: " + requests.size() + " Requests ");
 
-                  System.out.println("Total: " + requests.size() + " Requests ");
-
-                  for (Adoption req : requests) {
-                      System.out.println(req.animalName() + " - " + req.adoptionType() + " - " + req.userId());
-                  }
-
+              for (Adoption req : requests) {
+                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
               }
-              else{
-                  System.out.println("Error: " + requestResponse.getBody());
-              }
+
+            } else {
+              System.out.println("Error: " + requestResponse.getBody());
+            }
             userHomepage();
             return;
           }
 
           case 4 -> {
-              System.out.println("\n=== ACCEPTED REQUESTS ===");
+            System.out.println("\n=== ACCEPTED REQUESTS ===");
 
-              ApiResponse acceptedResponse = ApiClient.get("/adoptions/user/accepted");
-              if (acceptedResponse.isSuccess()) {
-                  List<Adoption> requests = parseList(acceptedResponse.getBody(), Adoption.class);
+            ApiResponse acceptedResponse = ApiClient.get("/adoptions/user/accepted");
+            if (acceptedResponse.isSuccess()) {
+              List<Adoption> requests = parseList(acceptedResponse.getBody(), Adoption.class);
 
+              System.out.println("Total: " + requests.size() + " Requests ");
 
-                  System.out.println("Total: " + requests.size() + " Requests ");
-
-                  for (Adoption req : requests) {
-                      System.out.println(req.animalName() + " - " + req.adoptionType() + " - " + req.userId());
-                  }
-
+              for (Adoption req : requests) {
+                System.out.println(req.animal().name() + " - " + req.adoptionType() + " - " + req.user().name());
               }
-              else{
-                  System.out.println("Error: " + acceptedResponse.getBody());
-              }
+
+            } else {
+              System.out.println("Error: " + acceptedResponse.getBody());
+            }
             userHomepage();
             return;
           }
@@ -1225,6 +1212,13 @@ public class App extends Application {
           }
 
           case 3 -> {
+            ApiResponse response = ApiClient.get("/sponsorships/all");
+            if (response.isSuccess()) {
+              List<Sponsorship> sponsors = parseList(response.getBody(), Sponsorship.class);
+              System.out.println(sponsors);
+            } else {
+              System.out.println(response.getBody());
+            }
             adminHomepage();
             return;
           }

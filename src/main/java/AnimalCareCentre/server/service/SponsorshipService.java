@@ -1,10 +1,11 @@
 package AnimalCareCentre.server.service;
 
+import java.time.LocalDate;
 import java.util.*;
 import org.springframework.stereotype.Service;
 
 import AnimalCareCentre.server.repository.SponsorshipRepository;
-import AnimalCareCentre.server.dto.SponsorshipResponseDTO;
+import AnimalCareCentre.server.dto.SponsorshipDTO;
 import AnimalCareCentre.server.model.*;
 
 @Service
@@ -21,6 +22,7 @@ public class SponsorshipService {
     sponsorship.setUser(user);
     sponsorship.setAnimal(animal);
     sponsorship.setAmount(amount);
+    sponsorship.setStartDate(LocalDate.now());
     return sponsorshipRepository.save(sponsorship);
   }
 
@@ -28,12 +30,12 @@ public class SponsorshipService {
     return sponsorshipRepository.findAll(); 
   }
   
-  public List<SponsorshipResponseDTO> searchSponsorshipsUser(User user){
+  public List<SponsorshipDTO> searchSponsorshipsUser(User user){
     List <Sponsorship> sponsors = sponsorshipRepository.findByUser(user);
     return sponsors.stream().map(a -> {
-      SponsorshipResponseDTO dto = new SponsorshipResponseDTO();
-      dto.setUser(a.getUser().getName());
-      dto.setAnimal(a.getAnimal().getName());
+      SponsorshipDTO dto = new SponsorshipDTO();
+      dto.setUser(a.getUser());
+      dto.setAnimal(a.getAnimal());
       dto.setAmount(a.getAmount());
       return dto;
     }).toList();

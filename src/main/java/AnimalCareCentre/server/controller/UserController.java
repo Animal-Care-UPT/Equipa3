@@ -35,5 +35,4 @@ public class UserController {
     u.setPassword(null);
     return ResponseEntity.status(201).body(u);
   }
-
 }
