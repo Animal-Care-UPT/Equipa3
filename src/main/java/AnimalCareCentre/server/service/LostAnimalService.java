@@ -64,7 +64,7 @@ public class LostAnimalService {
       lostAnimalRepository.delete(lostAnimal);
     }
 
-    public void deleteById(@NotNull long lostAnimalId) {
+    public void deleteById(long lostAnimalId) {
       lostAnimalRepository.deleteById(lostAnimalId);
     }
 }
