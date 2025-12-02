@@ -979,7 +979,7 @@ public class App extends Application {
 
         switch (option) {
           case 1 -> {
-            ApiResponse response = ApiClient.get("/shelters/pending");
+            ApiResponse response = ApiClient.get("/helters/pending");
             Shelter choice;
 
             if (response.isSuccess()) {
